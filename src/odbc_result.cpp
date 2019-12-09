@@ -126,6 +126,7 @@ void odbc_result::bind_list(
   rows_fetched_ = 0;
   auto types = column_types(x);
   auto ncols = x.size();
+  long affected = 0;
 
   if (s_->parameters() == 0) {
     Rcpp::stop("Query does not require parameters.");
@@ -152,13 +153,27 @@ void odbc_result::bind_list(
       bind_columns(*s_, types[col], x, col, start, size);
     }
     r_ = std::make_shared<nanodbc::result>(nanodbc::execute(*s_, size));
+    affected = r_->affected_rows();
+    if (affected < 0 || affected < static_cast<long>(size) )
+      break;
     num_columns_ = r_->columns();
     start += batch_rows;
 
     Rcpp::checkUserInterrupt();
   }
+
   if (t) {
-    t->commit();
+    if (start >= nrows) {
+      t->commit();
+    } else {
+      t->rollback();
+      Rcpp::stop(
+        "Failed writing row num %d; Attempted to rollback cleanly.", start + affected + 1);
+    }
+  } else {
+    if (start < nrows)
+      Rcpp::stop(
+        "Incomplete write.  Failed writing row num %d", start + affected + 1);
   }
   bound_ = true;
 }
