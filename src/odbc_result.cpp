@@ -768,15 +768,30 @@ Rcpp::List odbc_result::result_to_dataframe(nanodbc::result& r, int n_max) {
 
 void odbc_result::assign_integer(
     Rcpp::List& out, size_t row, short column, nanodbc::result& value) {
-  INTEGER(out[column])[row] = value.get<int>(column, NA_INTEGER);
+
+  auto res = value.get<int>(column, NA_INTEGER);
+  if (value.is_null(column)) {
+    res = NA_INTEGER;
+  }
+  INTEGER(out[column])[row] = res;
 }
 void odbc_result::assign_integer64(
     Rcpp::List& out, size_t row, short column, nanodbc::result& value) {
-  INTEGER64(out[column])[row] = value.get<int64_t>(column, NA_INTEGER64);
+
+  auto res = value.get<int64_t>(column, NA_INTEGER64);
+  if (value.is_null(column)) {
+    res = NA_INTEGER64;
+  }
+  INTEGER64(out[column])[row] = res;
 }
 void odbc_result::assign_double(
     Rcpp::List& out, size_t row, short column, nanodbc::result& value) {
-  REAL(out[column])[row] = value.get<double>(column, NA_REAL);
+
+  auto res = value.get<double>(column, NA_REAL);
+  if (value.is_null(column)) {
+    res = NA_REAL;
+  }
+  REAL(out[column])[row] = res;
 }
 
 // Strings may be in the server's internal code page, so we need to re-encode
@@ -845,7 +860,11 @@ void odbc_result::assign_datetime(
     res = NA_REAL;
   } else {
     auto ts = value.get<nanodbc::timestamp>(column);
-    res = as_double(ts);
+    if (value.is_null(column)) {
+      res = NA_REAL;
+    } else {
+      res = as_double(ts);
+    }
   }
 
   REAL(out[column])[row] = res;
@@ -858,7 +877,11 @@ void odbc_result::assign_date(
     res = NA_REAL;
   } else {
     auto ts = value.get<nanodbc::date>(column);
-    res = as_double(ts);
+    if (value.is_null(column)) {
+      res = NA_REAL;
+    } else {
+      res = as_double(ts);
+    }
   }
 
   REAL(out[column])[row] = res / seconds_in_day_;
@@ -871,7 +894,11 @@ void odbc_result::assign_time(
     res = NA_REAL;
   } else {
     auto ts = value.get<nanodbc::time>(column);
-    res = ts.hour * 3600 + ts.min * 60 + ts.sec;
+    if (value.is_null(column)) {
+      res = NA_REAL;
+    } else {
+      res = ts.hour * 3600 + ts.min * 60 + ts.sec;
+    }
   }
 
   REAL(out[column])[row] = res;
@@ -879,7 +906,11 @@ void odbc_result::assign_time(
 
 void odbc_result::assign_logical(
     Rcpp::List& out, size_t row, short column, nanodbc::result& value) {
-  LOGICAL(out[column])[row] = value.get<int>(column, NA_LOGICAL);
+  auto res = value.get<int>(column, NA_LOGICAL);
+  if (value.is_null(column)) {
+    res = NA_LOGICAL;
+  }
+  LOGICAL(out[column])[row] = res;
 }
 
 void odbc_result::assign_raw(
