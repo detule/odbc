@@ -1,4 +1,6 @@
 # odbc (development version)
+* odbc now always converts the encoding of non-ASCII column names of the SQL results to UTF-8. (@shrektan, #430)
+* Fixed issue that odbc may throw errors with garbage letters when the encoding of client and db-server are different. (@shrektan, #432)
 * Optimized table preview methods.  Enhances large table preview
   within RStudio IDE (@detule, #525)
 * Added `attributes` parameter to `dbConnect(...)`.  Can be used to pass a token and
