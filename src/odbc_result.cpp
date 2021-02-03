@@ -3,6 +3,8 @@
 #include "time_zone.h"
 #include <chrono>
 #include <memory>
+#include <future>
+#include <thread>
 
 namespace odbc {
 
@@ -46,15 +48,38 @@ void odbc_result::prepare() {
 }
 void odbc_result::execute() {
   if (!r_) {
-    try {
-      r_ = std::make_shared<nanodbc::result>(s_->execute());
-      num_columns_ = r_->columns();
-    } catch (const nanodbc::database_error& e) {
-      c_->set_current_result(nullptr);
-      throw odbc_error(e, sql_);
-    } catch (...) {
-      c_->set_current_result(nullptr);
-      throw;
+    std::exception_ptr eptr;
+    std::future_status status;
+    auto future = std::async(std::launch::async, [this, &eptr]() {
+      try {
+        r_ = std::make_shared<nanodbc::result>(s_->execute());
+        num_columns_ = r_->columns();
+      } catch (const nanodbc::database_error& e) {
+        c_->set_current_result(nullptr);
+        eptr = std::make_exception_ptr(odbc_error(e, sql_));
+      } catch (...) {
+        c_->set_current_result(nullptr);
+        eptr = std::current_exception();
+      }
+      return;
+    });
+    do {
+      // Every 1 second check for user interupt
+      status = future.wait_for(std::chrono::seconds(1));
+      if (status != std::future_status::ready) {
+        try {
+          Rcpp::checkUserInterrupt();
+        } catch (const Rcpp::internal::InterruptedException& e) {
+          Rcpp::warning("Caught user interrupt, attempting a clean exit\n");
+          c_->set_current_result(nullptr);
+          s_.reset();
+          throw;
+        }
+      }
+    } while (status != std::future_status::ready);
+    if (eptr) {
+      // An exception was thrown in the thread
+      std::rethrow_exception(eptr);
     }
   }
 }
