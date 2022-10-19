@@ -51,7 +51,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: r-lib/actions/setup-r@master
+      - uses: r-lib/actions/setup-r@main
 
       - name: Install R system dependencies
         if: runner.os == 'Linux'
