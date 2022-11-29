@@ -63,7 +63,7 @@ setMethod(
 #' driver does not return a valid value it can be set manually with this
 #' parameter.
 #' @param attributes An S4 object of connection attributes that are passed
-#' prior to the connection being established.  See \link{ConnectionAttributes}.
+#' prior to the connection being established.  See \linkS4class{ConnectionAttributes}.
 #' @param ... Additional ODBC keywords, these will be joined with the other
 #' arguments to form the final connection string.
 #' @param .connection_string A complete connection string, useful if you are
