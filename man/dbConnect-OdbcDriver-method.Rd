@@ -20,6 +20,7 @@
   uid = NULL,
   pwd = NULL,
   dbms.name = NULL,
+  azure.token = "",
   .connection_string = NULL
 )
 }
@@ -68,6 +69,9 @@ be queried automatically by the ODBC driver. This name is used as the class
 name for the OdbcConnect object returned from \code{dbConnect()}. However if the
 driver does not return a valid value it can be set manually with this
 parameter.}
+
+\item{azure.token}{A character string containing an access token.  Use only
+if authentication against SQL Server using Azure Active Diretory.}
 
 \item{.connection_string}{A complete connection string, useful if you are
 copy pasting it from another source. If this argument is used any additional
