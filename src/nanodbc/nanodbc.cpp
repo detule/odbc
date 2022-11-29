@@ -985,16 +985,16 @@ public:
         if (timeout != 0)
         {
             attributes.push_back(
-                {SQL_ATTR_LOGIN_TIMEOUT, SQL_IS_UINTEGER, (void*)(std::intptr_t)timeout});
+                attribute(SQL_ATTR_LOGIN_TIMEOUT, SQL_IS_UINTEGER, (void*)(std::intptr_t)timeout));
         }
 #if !defined(NANODBC_DISABLE_ASYNC) && defined(SQL_ATTR_ASYNC_DBC_EVENT)
         if (event_handle != nullptr)
         {
             attributes.push_back(
-                {SQL_ATTR_ASYNC_DBC_FUNCTIONS_ENABLE,
+                attribute(SQL_ATTR_ASYNC_DBC_FUNCTIONS_ENABLE,
                  SQL_IS_UINTEGER,
-                 (void*)(std::intptr_t)SQL_ASYNC_DBC_ENABLE_ON});
-            attributes.push_back({SQL_ATTR_ASYNC_DBC_EVENT, SQL_IS_POINTER, event_handle});
+                 (void*)(std::intptr_t)SQL_ASYNC_DBC_ENABLE_ON));
+            attributes.push_back(attribute(SQL_ATTR_ASYNC_DBC_EVENT, SQL_IS_POINTER, event_handle));
         }
 #endif
         return this->connect(dsn, user, pass, attributes);
@@ -1059,16 +1059,17 @@ public:
         if (timeout != 0)
         {
             attributes.push_back(
-                {SQL_ATTR_LOGIN_TIMEOUT, SQL_IS_UINTEGER, (void*)(std::intptr_t)timeout});
+                attribute(SQL_ATTR_LOGIN_TIMEOUT, SQL_IS_UINTEGER, (void*)(std::intptr_t)timeout));
         }
 #if !defined(NANODBC_DISABLE_ASYNC) && defined(SQL_ATTR_ASYNC_DBC_EVENT)
         if (event_handle != nullptr)
         {
             attributes.push_back(
-                {SQL_ATTR_ASYNC_DBC_FUNCTIONS_ENABLE,
+                attribute(SQL_ATTR_ASYNC_DBC_FUNCTIONS_ENABLE,
                  SQL_IS_UINTEGER,
-                 (void*)(std::intptr_t)SQL_ASYNC_DBC_ENABLE_ON});
-            attributes.push_back({SQL_ATTR_ASYNC_DBC_EVENT, SQL_IS_POINTER, event_handle});
+                 (void*)(std::intptr_t)SQL_ASYNC_DBC_ENABLE_ON));
+            attributes.push_back(
+                attribute(SQL_ATTR_ASYNC_DBC_EVENT, SQL_IS_POINTER, event_handle));
         }
 #endif
         return this->connect(connection_string, attributes);
