@@ -24,7 +24,8 @@ public:
       std::string timezone_out = "UTC",
       std::string encoding = "",
       bigint_map_t bigint_mapping = i64_to_integer64,
-      long timeout = 0);
+      long timeout = 0,
+      const std::string& azure_token = "");
 
   std::shared_ptr<nanodbc::connection> connection() const;
 
