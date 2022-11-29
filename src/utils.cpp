@@ -18,7 +18,7 @@ namespace utils {
     std::uint32_t* buffer32_t = ( std::uint32_t* ) ret.get();
     buffer32_t[ 0 ] = tokenSize;
     std::uint8_t* buffer8_t = ( std::uint8_t* ) ret.get();
-    for ( int i = 0, j = 0; i < tokenSize; i += 2, j++ )
+    for ( unsigned int i = 0, j = 0; i < tokenSize; i += 2, j++ )
     {
       buffer8_t[ 4 + i ] = token[ j ];
       buffer8_t[ 4 + i + 1 ] = 0;

@@ -53,7 +53,7 @@ connection_ptr odbc_connect(
     std::string const& encoding = "",
     int bigint = 0,
     long timeout = 0,
-    std::string const& azure_token = "") {
+    Rcpp::Nullable<Rcpp::S4> const& r_attributes_ = R_NilValue) {
   return connection_ptr(
       new std::shared_ptr<odbc_connection>(new odbc_connection(
           connection_string,
@@ -62,7 +62,7 @@ connection_ptr odbc_connect(
           encoding,
           static_cast<bigint_map_t>(bigint),
           timeout,
-          azure_token)));
+          r_attributes_)));
 }
 
 std::string get_info_or_empty(connection_ptr const& p, short type) {

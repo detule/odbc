@@ -24,7 +24,7 @@ OdbcConnection <- function(
   uid = NULL,
   pwd = NULL,
   dbms.name = NULL,
-  azure.token = "",
+  attributes = NULL,
   .connection_string = NULL) {
 
   args <- c(dsn = dsn, driver = driver, server = server, database = database, uid = uid, pwd = pwd, list(...))
@@ -38,7 +38,7 @@ OdbcConnection <- function(
     timeout <- 0
   }
 
-  ptr <- odbc_connect(connection_string, timezone = timezone, timezone_out = timezone_out, encoding = encoding, bigint = bigint, timeout = timeout, azure_token = azure.token)
+  ptr <- odbc_connect(connection_string, timezone = timezone, timezone_out = timezone_out, encoding = encoding, bigint = bigint, timeout = timeout, r_attributes_ = attributes)
   quote <- connection_quote(ptr)
 
   info <- connection_info(ptr)

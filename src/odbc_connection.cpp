@@ -26,7 +26,7 @@ odbc_connection::odbc_connection(
     std::string encoding,
     bigint_map_t bigint_mapping,
     long timeout,
-    const std::string& azure_token)
+    Rcpp::Nullable<Rcpp::S4> const& r_attributes_)
     : current_result_(nullptr),
       timezone_out_str_(timezone_out),
       encoding_(encoding),
@@ -50,11 +50,24 @@ odbc_connection::odbc_connection(
           {SQL_ATTR_LOGIN_TIMEOUT, SQL_IS_UINTEGER, (void*)(std::intptr_t)timeout});
     }
     std::shared_ptr< void > buffer;
-    if ( azure_token != "" )
+    if ( r_attributes_.isNotNull() )
     {
-      buffer = utils::serialize_azure_token( azure_token );
-      attributes.push_back(
-          {SQL_COPT_SS_ACCESS_TOKEN, SQL_IS_POINTER, buffer.get()});
+      Rcpp::S4 r_attributes( r_attributes_ );
+      if ( !r_attributes.is( "ConnectionAttributes" ) )
+      {
+        Rcpp::stop("Rcpp::The attributes parameter must inherit from the `ConnectionAttributes` class"); 
+      }
+      if ( r_attributes.hasSlot("azure_token") )
+      {
+        Rcpp::Nullable<Rcpp::String> azure_token_ = r_attributes.slot("azure_token");
+        if ( azure_token_.isNotNull() )
+        {
+          Rcpp::String azure_token( azure_token_ );
+          buffer = utils::serialize_azure_token( azure_token );
+          attributes.push_back(
+              {SQL_COPT_SS_ACCESS_TOKEN, SQL_IS_POINTER, buffer.get()});
+        }
+      }
     }
     c_ = std::make_shared<nanodbc::connection>(connection_string, attributes);
   } catch (const nanodbc::database_error& e) {

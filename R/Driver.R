@@ -1,4 +1,5 @@
 #' @include odbc.R
+#' @include attributes.R
 NULL
 
 #' Odbc Driver Methods
@@ -61,8 +62,8 @@ setMethod(
 #' name for the OdbcConnect object returned from `dbConnect()`. However if the
 #' driver does not return a valid value it can be set manually with this
 #' parameter.
-#' @param azure.token A character string containing an access token.  Use only
-#' if authentication against SQL Server using Azure Active Diretory.
+#' @param attributes An S4 object of connection attributes that are passed
+#' prior to the connection being established.  See \link{ConnectionAttributes}.
 #' @param ... Additional ODBC keywords, these will be joined with the other
 #' arguments to form the final connection string.
 #' @param .connection_string A complete connection string, useful if you are
@@ -97,7 +98,7 @@ setMethod(
     uid = NULL,
     pwd = NULL,
     dbms.name = NULL,
-    azure.token = "",
+    attributes = NULL,
     .connection_string = NULL) {
 
     con <- OdbcConnection(
@@ -114,7 +115,7 @@ setMethod(
       uid = uid,
       pwd = pwd,
       dbms.name = dbms.name,
-      azure.token = azure.token,
+      attributes = attributes,
       .connection_string = .connection_string)
 
     # perform the connection notification at the top level, to ensure that it's had

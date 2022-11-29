@@ -45,6 +45,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 SystemRequirements: C++11, GNU make, An ODBC3 driver manager and drivers.
 Collate: 
+    'attributes.R'
     'odbc.R'
     'Driver.R'
     'Connection.R'

@@ -20,7 +20,7 @@
   uid = NULL,
   pwd = NULL,
   dbms.name = NULL,
-  azure.token = "",
+  attributes = NULL,
   .connection_string = NULL
 )
 }
@@ -70,8 +70,8 @@ name for the OdbcConnect object returned from \code{dbConnect()}. However if the
 driver does not return a valid value it can be set manually with this
 parameter.}
 
-\item{azure.token}{A character string containing an access token.  Use only
-if authentication against SQL Server using Azure Active Diretory.}
+\item{attributes}{An S4 object of connection attributes that are passed
+prior to the connection being established.  See \link{ConnectionAttributes}.}
 
 \item{.connection_string}{A complete connection string, useful if you are
 copy pasting it from another source. If this argument is used any additional
