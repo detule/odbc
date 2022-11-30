@@ -46,8 +46,8 @@ odbc_connection::odbc_connection(
     std::list< nanodbc::connection::attribute > attributes;
     if ( timeout > 0 )
     {
-      attributes.push_back(
-          {SQL_ATTR_LOGIN_TIMEOUT, SQL_IS_UINTEGER, (void*)(std::intptr_t)timeout});
+      attributes.push_back(nanodbc::connection::attribute(
+          SQL_ATTR_LOGIN_TIMEOUT, SQL_IS_UINTEGER, (void*)(std::intptr_t)timeout));
     }
     std::shared_ptr< void > buffer;
     if ( r_attributes_.isNotNull() )
@@ -64,8 +64,8 @@ odbc_connection::odbc_connection(
         {
           Rcpp::String azure_token( azure_token_ );
           buffer = utils::serialize_azure_token( azure_token );
-          attributes.push_back(
-              {SQL_COPT_SS_ACCESS_TOKEN, SQL_IS_POINTER, buffer.get()});
+          attributes.push_back(nanodbc::connection::attribute(
+                SQL_COPT_SS_ACCESS_TOKEN, SQL_IS_POINTER, buffer.get()));
         }
       }
     }
