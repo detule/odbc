@@ -32,7 +32,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // odbc_connect
-connection_ptr odbc_connect(std::string const& connection_string, std::string const& timezone, std::string const& timezone_out, std::string const& encoding, int bigint, long timeout, Rcpp::Nullable<Rcpp::S4> const& r_attributes_);
+connection_ptr odbc_connect(std::string const& connection_string, std::string const& timezone, std::string const& timezone_out, std::string const& encoding, int bigint, long timeout, Rcpp::Nullable<Rcpp::List> const& r_attributes_);
 RcppExport SEXP _odbc_odbc_connect(SEXP connection_stringSEXP, SEXP timezoneSEXP, SEXP timezone_outSEXP, SEXP encodingSEXP, SEXP bigintSEXP, SEXP timeoutSEXP, SEXP r_attributes_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -43,7 +43,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::string const& >::type encoding(encodingSEXP);
     Rcpp::traits::input_parameter< int >::type bigint(bigintSEXP);
     Rcpp::traits::input_parameter< long >::type timeout(timeoutSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::S4> const& >::type r_attributes_(r_attributes_SEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::List> const& >::type r_attributes_(r_attributes_SEXP);
     rcpp_result_gen = Rcpp::wrap(odbc_connect(connection_string, timezone, timezone_out, encoding, bigint, timeout, r_attributes_));
     return rcpp_result_gen;
 END_RCPP

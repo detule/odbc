@@ -53,7 +53,7 @@ connection_ptr odbc_connect(
     std::string const& encoding = "",
     int bigint = 0,
     long timeout = 0,
-    Rcpp::Nullable<Rcpp::S4> const& r_attributes_ = R_NilValue) {
+    Rcpp::Nullable<Rcpp::List> const& r_attributes_ = R_NilValue) {
   return connection_ptr(
       new std::shared_ptr<odbc_connection>(new odbc_connection(
           connection_string,

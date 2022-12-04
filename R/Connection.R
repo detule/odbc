@@ -1,6 +1,22 @@
 #' @include Driver.R
 NULL
 
+#' Supported Connection Attributes
+#'
+#' These (pre) connection attributes are supported and can be passed as
+#' part of the `dbConnect` call in the named list `attributes` parameter:
+#'
+#' * azure_token: This should be a string scalar; in particular Azure Active
+#'   Directory authentication token.  Only for use with Microsoft SQL Server and
+#'   with limited support away from the OEM Microsoft driver.
+#' @rdname ConnectionAttributes
+#' @aliases SUPPORTED_CONNECTION_ATTRIBUTES
+#' @usage NULL
+#' @format NULL
+#' @export
+SUPPORTED_CONNECTION_ATTRIBUTES <-
+  c("azure_token")
+
 #' Odbc Connection Methods
 #'
 #' Implementations of pure virtual functions defined in the `DBI` package
@@ -29,6 +45,10 @@ OdbcConnection <- function(
 
   args <- c(dsn = dsn, driver = driver, server = server, database = database, uid = uid, pwd = pwd, list(...))
   stopifnot(all(has_names(args)))
+  if ( length(attributes) ) {
+    stopifnot(all(has_names(attributes)))
+    stopifnot(all(names(attributes) %in% SUPPORTED_CONNECTION_ATTRIBUTES))
+  }
 
   connection_string <- paste0(.connection_string, paste(collapse = ";", sep = "=", names(args), args))
 
