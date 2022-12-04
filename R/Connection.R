@@ -13,6 +13,14 @@ NULL
 #' @aliases SUPPORTED_CONNECTION_ATTRIBUTES
 #' @usage NULL
 #' @format NULL
+#' @examples
+#' \dontrun{
+#' conn <- dbConnect(
+#'   odbc::odbc(),
+#'   dsn = "my_azure_mssql_db",
+#'   Encrypt = "yes",
+#'   attributes = list("azure_token" = .token)
+#' }
 #' @export
 SUPPORTED_CONNECTION_ATTRIBUTES <-
   c("azure_token")
@@ -45,10 +53,8 @@ OdbcConnection <- function(
 
   args <- c(dsn = dsn, driver = driver, server = server, database = database, uid = uid, pwd = pwd, list(...))
   stopifnot(all(has_names(args)))
-  if ( length(attributes) ) {
-    stopifnot(all(has_names(attributes)))
-    stopifnot(all(names(attributes) %in% SUPPORTED_CONNECTION_ATTRIBUTES))
-  }
+  stopifnot(all(has_names(attributes)))
+  stopifnot(all(names(attributes) %in% SUPPORTED_CONNECTION_ATTRIBUTES))
 
   connection_string <- paste0(.connection_string, paste(collapse = ";", sep = "=", names(args), args))
 
