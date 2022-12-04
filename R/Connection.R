@@ -10,7 +10,7 @@ NULL
 #'   Directory authentication token.  Only for use with Microsoft SQL Server and
 #'   with limited support away from the OEM Microsoft driver.
 #' @rdname ConnectionAttributes
-#' @aliases SUPPORTED_CONNECTION_ATTRIBUTES
+#' @aliases ConnectionAttributes
 #' @usage NULL
 #' @format NULL
 #' @examples

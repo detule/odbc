@@ -3,6 +3,7 @@
 \docType{data}
 \name{SUPPORTED_CONNECTION_ATTRIBUTES}
 \alias{SUPPORTED_CONNECTION_ATTRIBUTES}
+\alias{ConnectionAttributes}
 \title{Supported Connection Attributes}
 \description{
 These (pre) connection attributes are supported and can be passed as
