@@ -176,6 +176,16 @@ setMethod(
   }
 )
 
+#' @rdname odbcConnectionColumns
+#' @param conn OdbcConnection
+#' @param name table we wish to get information on
+#' @export
+setMethod(
+  "odbcConnectionColumns", c("OdbcConnection", "SQL"),
+  function(conn, name, ...) {
+    odbcConnectionColumns(conn, dbUnquoteIdentifier(conn, name)[[1]], ...)
+  })
+
 # TODO: show encoding, timezone, bigint mapping
 #' @rdname OdbcConnection
 #' @inheritParams methods::show
