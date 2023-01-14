@@ -19,6 +19,9 @@
     <loc>https://r-dbi.github.io/odbc/dev/news/index.html</loc>
   </url>
   <url>
+    <loc>https://r-dbi.github.io/odbc/dev/reference/ConnectionAttributes.html</loc>
+  </url>
+  <url>
     <loc>https://r-dbi.github.io/odbc/dev/reference/OdbcConnection.html</loc>
   </url>
   <url>
@@ -83,6 +86,9 @@
   </url>
   <url>
     <loc>https://r-dbi.github.io/odbc/dev/reference/odbcPreviewObject.html</loc>
+  </url>
+  <url>
+    <loc>https://r-dbi.github.io/odbc/dev/reference/odbcPreviewQuery.html</loc>
   </url>
   <url>
     <loc>https://r-dbi.github.io/odbc/dev/reference/odbcSetTransactionIsolationLevel.html</loc>
