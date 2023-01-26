@@ -21,4 +21,4 @@ jobs:
           show-log: true
 
       - name: Run sqlcmd
-        run: sqlcmd -S localhost -U sa -P c0MplicatedP@ssword -d tempdb -Q "SELECT @@version;"
+        run: sqlcmd -S localhost -U sa -P Password12 -d tempdb -Q "SELECT @@version;"
