@@ -83,7 +83,7 @@ jobs:
 
       - name: Install SQL Server Driver
         if: matrix.database == 'SQLServer' && matrix.os == 'Windows'
-        uses: uses: potatoqualitee/mssqlsuite@v1.7
+        uses: potatoqualitee/mssqlsuite@v1.7
         with:
           install: sqlengine, sqlclient
         run: sqlcmd -S localhost -U sa -P Password12 -d tempdb -Q "SELECT @@version;"
