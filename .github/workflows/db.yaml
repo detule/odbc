@@ -140,7 +140,8 @@ jobs:
 
       - name: Install locally to avoid error with test_local()
         run: |
-          R CMD INSTALL .
+          install.packages(".", repos = NULL, type = "source")
+        shell: Rscript {0}
 
       - name: Test
         run: |
