@@ -3,7 +3,7 @@ test_that("SQLServer", {
       if ( Sys.info()[['sysname']] == "Linux" ) {
         DBItest::make_context(odbc(), list(dsn = "MicrosoftSQLServer", UID="SA", PWD="Password12"), tweaks = DBItest::tweaks(temporary_tables = FALSE), name = "SQLServer")
       } else {
-        DBItest::make_context(odbc(), list(.connection_string = "Server=localhost;Uid=sa;Pwd=Password12"), tweaks = DBItest::tweaks(temporary_tables = FALSE), name = "SQLServer")
+        DBItest::make_context(odbc(), list(.connection_string = "Driver={ODBC Driver 17 for SQL Server};Server=localhost;Uid=sa;Pwd=Password12"), tweaks = DBItest::tweaks(temporary_tables = FALSE), name = "SQLServer")
       }
   })
 
