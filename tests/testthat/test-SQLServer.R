@@ -1,6 +1,10 @@
 test_that("SQLServer", {
   skip_unless_has_test_db({
-      DBItest::make_context(odbc(), list(dsn = "MicrosoftSQLServer", UID="SA", PWD="Password12"), tweaks = DBItest::tweaks(temporary_tables = FALSE), name = "SQLServer")
+      if ( Sys.info()[['sysname']] == "Linux" ) {
+        DBItest::make_context(odbc(), list(dsn = "MicrosoftSQLServer", UID="SA", PWD="Password12"), tweaks = DBItest::tweaks(temporary_tables = FALSE), name = "SQLServer")
+      } else {
+        DBItest::make_context(odbc(), list(.connection_string = "Server=localhost;Uid=sa;Pwd=Password12"), tweaks = DBItest::tweaks(temporary_tables = FALSE), name = "SQLServer")
+      }
   })
 
   DBItest::test_getting_started(c(
