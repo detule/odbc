@@ -67,7 +67,7 @@ jobs:
         if: matrix.database == 'PostgreSQL'
         run: |
           choco install psqlodbc
-          echo "ODBC_CS=Driver={PostgreSQL ANSI(x64)};Server=localhost;Port=5432;BoolsAsChar=0;Database=test;UID=postgres;PWD=" >> $env:GITHUB_ENV
+          echo "ODBC_CS=Driver={PostgreSQL ANSI(x64)};Server=localhost;Port=5432;BoolsAsChar=0;LFConversion=0;Database=test;UID=postgres;PWD=" >> $env:GITHUB_ENV
 
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
