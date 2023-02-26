@@ -79,7 +79,7 @@ jobs:
       - name: Install Driver Support
         if: matrix.database == 'SQLite'
         run: |
-          echo "ODBC_CS=Driver={SQLite3 ODBC Driver};Database=${{HOME}}\AppData\Local\Temp\test;Timeout=2000" >> $env:GITHUB_ENV
+          echo "ODBC_CS=Driver={SQLite3 ODBC Driver};Database=${{env.RUNNER_TEMP}}\test;Timeout=2000" >> $env:GITHUB_ENV
 
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
