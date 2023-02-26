@@ -1,6 +1,10 @@
 test_that("PostgreSQL", {
   skip_unless_has_test_db({
-    DBItest::make_context(odbc(), list(dsn = "PostgreSQL"), tweaks = DBItest::tweaks(temporary_tables = FALSE, placeholder_pattern = "?"), name = "PostgreSQL")
+    if ( Sys.info()[['sysname']] == "Linux" ) {
+      DBItest::make_context(odbc(), list(dsn = "PostgreSQL"), tweaks = DBItest::tweaks(temporary_tables = FALSE, placeholder_pattern = "?"), name = "PostgreSQL")
+    } else {
+      DBItest::make_context(odbc(), list(.connection_string = "Driver={PostgreSQL ANSI(x64)};Server=localhost;Port=5432;Database=test;UID=postgres;PWD="), tweaks = DBItest::tweaks(temporary_tables = FALSE, placeholder_pattern = "?"), name = "PostgreSQL")
+    }
   })
 
   context("custom tests")
