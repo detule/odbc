@@ -10,7 +10,7 @@ test_that("PostgreSQL", {
   context("custom tests")
   test_that("show method works as expected with real connection", {
     skip_on_os("windows")
-    con <- dbConnect(odbc(), "PostgreSQL")
+    con <- DBItest:::connect(DBItest:::get_default_context())
 
     expect_output(show(con), "@localhost")
     expect_output(show(con), "Database: [a-z]+")
@@ -18,7 +18,7 @@ test_that("PostgreSQL", {
   })
 
   test_that("64 bit integers work with alternate mappings", {
-    con_default <- dbConnect(odbc(), "PostgreSQL")
+    con_default <- DBItest:::connect(DBItest:::get_default_context())
     con_integer64 <- dbConnect(odbc(), "PostgreSQL", bigint = "integer64")
     con_integer <- dbConnect(odbc(), "PostgreSQL", bigint = "integer")
     con_numeric <- dbConnect(odbc(), "PostgreSQL", bigint = "numeric")
@@ -44,7 +44,7 @@ test_that("PostgreSQL", {
   # differently than the table we are targetting.
   test_that("Writing data.frame with column ordering different than target table", {
     tblName <- "test_order_write"
-    con <- dbConnect(odbc(), "PostgreSQL")
+    con <- DBItest:::connect(DBItest:::get_default_context())
     values <- data.frame(
       datetime = as.POSIXct(c(14, 15), origin = "2016-01-01", tz = "UTC"),
       name = c("one", "two"),
