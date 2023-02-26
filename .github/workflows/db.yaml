@@ -20,6 +20,7 @@ jobs:
       matrix:
         database:
           - SQLServer
+          - MySQL
     env:
       CRAN: "https://packagemanager.rstudio.com/cran/latest"
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -37,6 +38,14 @@ jobs:
           version: 2019
           sa-password: Password12
           show-log: true
+
+      - name: Install MySQL
+        if: matrix.database == 'MySQL'
+        uses: ankane/setup-mysql@v1
+        with:
+          database: test
+        run: |
+          choco install mysql-odbc
 
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
