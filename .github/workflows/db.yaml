@@ -44,6 +44,9 @@ jobs:
         uses: ankane/setup-mysql@v1
         with:
           database: test
+
+      - name: Install Driver Support
+        if: matrix.database == 'MySQL'
         run: |
           choco install mysql-odbc
 
