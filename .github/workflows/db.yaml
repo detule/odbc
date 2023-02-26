@@ -21,6 +21,7 @@ jobs:
         database:
           - SQLServer
           - MySQL
+          - PostgreSQL
     env:
       CRAN: "https://packagemanager.rstudio.com/cran/latest"
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -45,10 +46,21 @@ jobs:
         with:
           database: test
 
+      - name: Install PostgreSQL
+        if: matrix.database == 'PostgreSQL'
+        uses: ankane/setup-postgres@v1
+        with:
+          database: test
+
       - name: Install Driver Support
         if: matrix.database == 'MySQL'
         run: |
           choco install mysql-odbc
+
+      - name: Install Driver Support
+        if: matrix.database == 'PostgreSQL'
+        run: |
+          choco install psqlodbc
 
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
