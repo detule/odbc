@@ -22,6 +22,7 @@ jobs:
           - SQLServer
           - MySQL
           - PostgreSQL
+          - SQLite
     env:
       CRAN: "https://packagemanager.rstudio.com/cran/latest"
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -52,6 +53,12 @@ jobs:
         with:
           database: test
 
+      - name: Install SQLite
+        if: matrix.database == 'SQLite'
+        run: |
+          (New-Object Net.WebClient).DownloadFile('http://www.ch-werner.de/sqliteodbc/sqliteodbc_w64.exe', 'sqliteodbc_w64.exe')
+           ./sqliteodbc_w64.exe /S
+
       - name: Install Driver Support
         if: matrix.database == 'SQLServer'
         run: |
@@ -68,6 +75,11 @@ jobs:
         run: |
           choco install psqlodbc
           echo "ODBC_CS=Driver={PostgreSQL ANSI(x64)};Server=localhost;Port=5432;BoolsAsChar=0;LFConversion=0;Database=test;UID=postgres;PWD=" >> $env:GITHUB_ENV
+
+      - name: Install Driver Support
+        if: matrix.database == 'SQLite'
+        run: |
+          echo "ODBC_CS=Driver={SQLite3 ODBC Driver};Database=/tmp/test;Timeout=2000" >> $env:GITHUB_ENV
 
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
