@@ -11,27 +11,8 @@ on:
 name: DBs
 
 jobs:
-  testthat:
-    runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres
-        ports:
-        - 5432:5432
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: test
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-      sqlserver:
-        image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
-        ports:
-        - 1433:1433
-        env:
-          ACCEPT_EULA: Y
-          SA_PASSWORD: Password12
-
+  testthat-Windows:
+    runs-on: windows-latest
     name: ${{ matrix.database }}
 
     strategy:
@@ -42,53 +23,63 @@ jobs:
           - MySQL
           - PostgreSQL
           - SQLite
-
     env:
-      CRAN: "https://packagemanager.rstudio.com/cran/__linux__/xenial/latest"
-      ODBCSYSINI: ${{ github.workspace }}/.github/odbc
+      CRAN: "https://packagemanager.rstudio.com/cran/latest"
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v2
 
       - uses: r-lib/actions/setup-r@v2
+ 
+      - name: Install SQL Server
+        if: matrix.database == 'SQLServer'
+        uses: potatoqualitee/mssqlsuite@v1.7
+        with:
+          install: sqlengine, sqlclient
+          version: 2019
+          sa-password: Password12
+          show-log: true
 
-      - name: Install R system dependencies
-        if: runner.os == 'Linux'
-        env:
-          RHUB_PLATFORM: linux-x86_64-ubuntu-gcc
-        run: |
-          Rscript -e "install.packages('remotes')"
-          Rscript -e "remotes::install_github('r-hub/sysreqs')"
-          sysreqs=$(Rscript -e "cat(sysreqs::sysreq_commands('DESCRIPTION'))")
-          sudo -s eval "$sysreqs"
-
-      - name: Setup MySQL
+      - name: Install MySQL
         if: matrix.database == 'MySQL'
-        run: |
-          sudo systemctl start mysql.service
-          mysql -uroot -h127.0.0.1 -proot -e 'CREATE DATABASE `test`;'
-          .github/odbc/install-mariadb-driver.sh
+        uses: ankane/setup-mysql@v1
+        with:
+          database: test
 
-      - name: Install SQLite Driver
+      - name: Install PostgreSQL
+        if: matrix.database == 'PostgreSQL'
+        uses: ankane/setup-postgres@v1
+        with:
+          database: test
+
+      - name: Install SQLite
         if: matrix.database == 'SQLite'
         run: |
-          sudo apt-get install -y libsqliteodbc
+          (New-Object Net.WebClient).DownloadFile('http://www.ch-werner.de/sqliteodbc/sqliteodbc_w64.exe', 'sqliteodbc_w64.exe')
+           ./sqliteodbc_w64.exe /S
 
-      - name: Install PostgreSQL Driver
-        if: matrix.database == 'PostgreSQL'
-        run: |
-          sudo apt-get install -y unixodbc-dev odbc-postgresql devscripts
-
-      - name: Install SQL Server Driver
+      - name: Install Driver Support
         if: matrix.database == 'SQLServer'
         run: |
-          curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-          curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list > /etc/apt/sources.list.d/mssql-release.list
-          apt-get update
-          ACCEPT_EULA=Y apt-get install -y msodbcsql17
-          ln -s /opt/microsoft/msodbcsql17/lib64/libmsodbcsql-17.*.so.* /opt/microsoft/msodbcsql17/lib64/libmsodbcsql-17.so
-        shell: sudo bash {0}
+          echo "ODBC_CS=Driver={ODBC Driver 17 for SQL Server};Server=localhost;Uid=sa;Pwd=Password12" >> $env:GITHUB_ENV
+
+      - name: Install Driver Support
+        if: matrix.database == 'MySQL'
+        run: |
+          choco install mysql-odbc
+          echo "ODBC_CS=Driver={MySQL ODBC 5.3 ANSI Driver};Server=127.0.0.1;Database=test;User=root;Password=" >> $env:GITHUB_ENV
+
+      - name: Install Driver Support
+        if: matrix.database == 'PostgreSQL'
+        run: |
+          choco install psqlodbc
+          echo "ODBC_CS=Driver={PostgreSQL ANSI(x64)};Server=localhost;Port=5432;BoolsAsChar=0;LFConversion=0;Database=test;UID=postgres;PWD=" >> $env:GITHUB_ENV
+
+      - name: Install Driver Support
+        if: matrix.database == 'SQLite'
+        run: |
+          echo "ODBC_CS=Driver={SQLite3 ODBC Driver};Database=${{ runner.temp }}\test;Timeout=2000" >> $env:GITHUB_ENV
 
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
@@ -98,10 +89,18 @@ jobs:
 
       - name: Install locally to avoid error with test_local()
         run: |
-          R CMD INSTALL .
-        env:
-          LIB_DIR: /usr/lib/x86_64-linux-gnu/
-          INCLUDE_DIR: /usr/include
+          install.packages(".", repos = NULL, type = "source")
+        shell: Rscript {0}
+
+      - name: Test0
+        run: |
+          library(odbc); odbc::odbcListDrivers(); odbc::odbcListDataSources();
+        shell: Rscript {0}
+
+      - name: Test1
+        run: |
+          Sys.getenv("ODBC_CS");
+        shell: Rscript {0}
 
       - name: Test
         run: |
