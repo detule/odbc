@@ -53,14 +53,21 @@ jobs:
           database: test
 
       - name: Install Driver Support
+        if: matrix.database == 'SQLServer'
+        run: |
+          ${env.ODBC_CS} = "Driver={ODBC Driver 17 for SQL Server};Server=localhost;Uid=sa;Pwd=Password12"
+
+      - name: Install Driver Support
         if: matrix.database == 'MySQL'
         run: |
           choco install mysql-odbc
+          ${env.ODBC_CS} = "Driver={MySQL ODBC 5.3 ANSI Driver};Server=127.0.0.1;Database=test;User=root;Password="
 
       - name: Install Driver Support
         if: matrix.database == 'PostgreSQL'
         run: |
           choco install psqlodbc
+          ${env.ODBC_CS} = "Driver={PostgreSQL ANSI(x64)};Server=localhost;Port=5432;Database=test;UID=postgres;PWD="
 
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2

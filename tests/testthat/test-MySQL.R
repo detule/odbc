@@ -1,10 +1,7 @@
 test_that("MySQL", {
   skip_unless_has_test_db({
-    if ( Sys.info()[['sysname']] == "Linux" ) {
-      DBItest::make_context(odbc(), list(dsn = "MySQL"), tweaks = DBItest::tweaks(temporary_tables = FALSE), name = "MySQL")
-    } else {
-      DBItest::make_context(odbc(), list(.connection_string = "Driver={MySQL ODBC 5.3 ANSI Driver};Server=127.0.0.1;Database=test;User=root;Password=;"), tweaks = DBItest::tweaks(temporary_tables = FALSE), name = "MySQL")
-    }
+    DBItest::make_context(odbc(), list(.connection_string = Sys.getenv("ODBC_CS")),
+      tweaks = DBItest::tweaks(temporary_tables = FALSE), name = "MySQL")
   })
 
   DBItest::test_getting_started(c(
