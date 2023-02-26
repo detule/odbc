@@ -67,7 +67,7 @@ jobs:
         if: matrix.database == 'PostgreSQL'
         run: |
           choco install psqlodbc
-          ${env.ODBC_CS} = "Driver={PostgreSQL ANSI(x64)};Server=localhost;Port=5432;Database=test;UID=postgres;PWD="
+          ${env.ODBC_CS} = "Driver={PostgreSQL ANSI(x64)};Server=localhost;Port=5432;BoolsAsChar=0;Database=test;UID=postgres;PWD="
 
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
