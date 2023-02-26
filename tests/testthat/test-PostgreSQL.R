@@ -19,10 +19,14 @@ test_that("PostgreSQL", {
 
   test_that("64 bit integers work with alternate mappings", {
     con_default <- DBItest:::connect(DBItest:::get_default_context())
-    con_integer64 <- dbConnect(odbc(), "PostgreSQL", bigint = "integer64")
-    con_integer <- dbConnect(odbc(), "PostgreSQL", bigint = "integer")
-    con_numeric <- dbConnect(odbc(), "PostgreSQL", bigint = "numeric")
-    con_character <- dbConnect(odbc(), "PostgreSQL", bigint = "character")
+    con_integer64 <-
+      DBItest:::connect(DBItest:::get_default_context(), bigint = "integer64")
+    con_integer <-
+      DBItest:::connect(DBItest:::get_default_context(), bigint = "integer")
+    con_numeric <-
+      DBItest:::connect(DBItest:::get_default_context(), bigint = "numeric")
+    con_character <-
+      DBItest:::connect(DBItest:::get_default_context(), bigint = "character")
 
     dbWriteTable(con_default, "test", data.frame(a = 1:10L), field.types = c(a = "BIGINT"))
     on.exit(dbRemoveTable(con_default, "test"))
