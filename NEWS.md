@@ -1,5 +1,10 @@
 # odbc (development version)
 
+* Fixed truncation when retrieving unicode data stored in
+  VAR/CHAR columns (@detule, #553).
+* MYSQL: Fixed retrieving results from stored procedures (@detule, #435).
+* Fixed issue related to fetching zero rows (@detule, #528).
+
 # odbc 1.3.4
 
 * Optimized table preview methods.  Enhances large table preview
