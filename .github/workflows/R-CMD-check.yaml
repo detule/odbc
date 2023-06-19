@@ -46,9 +46,9 @@ jobs:
       - uses: r-lib/actions/setup-pandoc@v2
 
       - name: Install LLVM
-        if: ${{ matrix.cc }} == 'clang'
+        if: matrix.cc == 'clang'
         run: |
-            bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+            sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
 
       - uses: r-lib/actions/setup-r@v2
         with:
