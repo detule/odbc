@@ -61,5 +61,8 @@ jobs:
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
+        env:
+          CC: clang-16
+          CXX: clang++-16
         with:
           upload-snapshots: true
