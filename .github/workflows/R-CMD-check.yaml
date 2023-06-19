@@ -30,6 +30,7 @@ jobs:
 
           - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,   r: 'release'}
+          - {os: ubuntu-latest,   r: 'release', cc: clang}
           - {os: ubuntu-latest,   r: 'oldrel-1'}
           - {os: ubuntu-latest,   r: 'oldrel-2'}
           - {os: ubuntu-latest,   r: 'oldrel-3'}
@@ -44,6 +45,10 @@ jobs:
 
       - uses: r-lib/actions/setup-pandoc@v2
 
+      - name: Install LLVM
+        run: |
+            sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.config.r }}
@@ -56,5 +61,8 @@ jobs:
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
+        env:
+          CC: clang-16
+          CXX: clang++-16
         with:
           upload-snapshots: true
