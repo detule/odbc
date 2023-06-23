@@ -68,7 +68,7 @@ jobs:
         if: matrix.database == 'MySQL'
         run: |
           choco install mysql-odbc
-          echo "ODBC_CS=Driver={MySQL ODBC 5.3 ANSI Driver};Server=127.0.0.1;Database=test;User=root;Password=" >> $env:GITHUB_ENV
+          echo "ODBC_CS=Driver={MySQL ODBC 5.3 ANSI Driver};Server=localhost;Database=test;UID=ODBC;PWD=" >> $env:GITHUB_ENV
 
       - name: Install Driver Support
         if: matrix.database == 'PostgreSQL'
@@ -84,12 +84,16 @@ jobs:
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: r-dbi/DBITest
           needs: check
 
       - name: Install locally to avoid error with test_local()
         run: |
           install.packages(".", repos = NULL, type = "source")
+        shell: Rscript {0}
+
+      - name: Test0
+        run: |
+          library(odbc); odbc::odbcListDrivers(); odbc::odbcListDataSources();
         shell: Rscript {0}
 
       - name: Test
