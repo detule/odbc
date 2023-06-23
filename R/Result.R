@@ -43,7 +43,7 @@ setMethod(
   "dbClearResult", "OdbcResult",
   function(res, ...) {
     if (!dbIsValid(res)) {
-#      warning("Result already cleared")
+      warning("Result already cleared")
     }
     result_release(res@ptr)
     invisible(TRUE)
