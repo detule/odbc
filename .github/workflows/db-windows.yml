@@ -91,6 +91,11 @@ jobs:
           install.packages(".", repos = NULL, type = "source")
         shell: Rscript {0}
 
+      - name: Test0
+        run: |
+          library(odbc); odbc::odbcListDrivers(); odbc::odbcListDataSources();
+        shell: Rscript {0}
+
       - name: Test
         run: |
           testthat::test_local(filter = "${{ matrix.database }}", reporter = testthat::ProgressReporter$new(max_failures = Inf, update_interval = Inf))
