@@ -230,8 +230,9 @@ test_that("SQLServer", {
     tblName <- "test_zero_row_fetch"
     dbWriteTable(con, tblName, mtcars[1:2,])
     on.exit(dbRemoveTable(con, tblName))
-    rs = dbSendStatement(con, paste0("SELECT * FROM ", tblName))
+    rs <- dbSendStatement(con, paste0("SELECT * FROM ", tblName))
     expect_equal(nrow(dbFetch(rs, n = 0)), 0)
     expect_equal(nrow(dbFetch(rs, n = 10)), 2)
+    dbClearResult(rs)
   })
 })
