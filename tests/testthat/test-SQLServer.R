@@ -235,4 +235,20 @@ test_that("SQLServer", {
     expect_equal(nrow(dbFetch(rs, n = 10)), 2)
     dbClearResult(rs)
   })
+
+  #(#313) With FreeTDS driver fails if result_describe_parameters
+  #stanza is ineffective in odbc_write_table.  In particular, since
+  #SQLDescribeParam is not implemented with FreeTDS, parameter
+  #description falls back to a default of VARCHAR(256) and the
+  #inserted value is truncated ( original length is 400 ).
+  test_that("On INSERT, parameter type is correctly deduced ", {
+    con <- DBItest:::connect(DBItest:::get_default_context())
+    tblName <- "test_long_char_insert"
+    DF <- data.frame(val = paste(LETTERS[ rep(1:20, 20) ], collapse=""),
+       stringsAsFactors = FALSE)
+    dbWriteTable(con, tblName, DF)
+    on.exit(dbRemoveTable(con, tblName))
+    res <- dbReadTable(con, tblName)
+    expect_equal(res, DF)
+  })
 })
