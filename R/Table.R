@@ -212,7 +212,7 @@ setMethod(
       conn,
       name = id_field(name, "table"),
       catalog_name = id_field(name, "catalog"),
-      schema_name= id_field(name, "schema")
+      schema_name = id_field(name, "schema")
     )
   })
 

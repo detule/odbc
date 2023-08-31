@@ -229,33 +229,6 @@ setMethod("dbUnquoteIdentifier", c("Microsoft SQL Server", "SQL"),
     callNextMethod( conn, x, ... )
   })
 
-`isTempTable.Microsoft SQL Server` <- function(conn, name, ...) {
-  args <- list(...)
-  if ( "catalog_name" %in% names(args) ) {
-    catalog_name <- args[["catalog_name"]]
-    if ( !is.null(catalog_name) &&
-        catalog_name != "%" &&
-        length(catalog_name ) > 0 &&
-        catalog_name != "tempdb" ) {
-      return(FALSE)
-    }
-  }
-  if ( "schema_name" %in% names(args) ) {
-    schema_name <- args[["catalog_name"]]
-    if ( !is.null(schema_name) &&
-        schema_name != "%" &&
-        length(schema_name ) > 0 &&
-        schema_name != "dbo" ) {
-      return(FALSE)
-    }
-  }
-
-  if ( !grepl("^[#][^#]", name ) ) {
-    return(FALSE)
-  }
-  return(TRUE)
-}
-
 #' SQL Server specific implementation.
 #'
 #' Local temp tables are stored as
