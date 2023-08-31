@@ -253,7 +253,7 @@ test_that("SQLServer", {
   test_that("dbExistsTable accounts for local temp tables", {
     con <- DBItest:::connect(DBItest:::get_default_context())
     tbl_name <- "#myTemp"
-    DBI::dbExecute(conn, paste0("CREATE TABLE ", tbl_name, " (
+    DBI::dbExecute(con, paste0("CREATE TABLE ", tbl_name, " (
       id int not null,
       primary key (id) )"), immediate = TRUE)
     expect_true( dbExistsTable( con, tbl_name) )
