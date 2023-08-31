@@ -255,7 +255,7 @@ setMethod("dbUnquoteIdentifier", c("Microsoft SQL Server", "SQL"),
   return(TRUE)
 }
 
-#' SQL server specific dbExistsTable implementation that accounts for
+#' @details SQL server specific dbExistsTable implementation that accounts for
 #' local temp tables.
 #'
 #' If we can identify that the name is that of a local temp table
@@ -265,12 +265,15 @@ setMethod("dbUnquoteIdentifier", c("Microsoft SQL Server", "SQL"),
 #' set such that catalog functions accept wildcard entries.
 #'
 #' Driver note.  OEM driver will return correctly for
-#' name, catalog_name = "tempdb" in some circumstances.  For exmaple
+#' name, \code{catalog_name = "tempdb"} in some circumstances.  For exmaple
 #' if the name has no underscores to beginwith.  FreeTDS, will not index
 #' the table correctly unless name is adjusted ( allowed trailing wildcards to
 #' accomodate trailing underscores and postfix ).
 #'
-#' Therefore, in all cases query for [name]___%.
+#' Therefore, in all cases query for \code{name___%}.
+#' @rdname OdbcConnection
+#' @inheritParams DBI::dbExistsTable
+#' @export
 setMethod(
   "dbExistsTable", c("Microsoft SQL Server", "character"),
   function(conn, name, ...) {
