@@ -244,15 +244,6 @@ setMethod("dbUnquoteIdentifier", c("Microsoft SQL Server", "SQL"),
       return(FALSE)
     }
   }
-  if ( "schema_name" %in% names(args) ) {
-    schema_name <- args[["catalog_name"]]
-    if ( !is.null(schema_name) &&
-        schema_name != "%" &&
-        length(schema_name ) > 0 &&
-        schema_name != "dbo" ) {
-      return(FALSE)
-    }
-  }
 
   if ( !grepl("^[#][^#]", name ) ) {
     return(FALSE)
@@ -274,7 +265,6 @@ setMethod(
     stopifnot(length(name) == 1)
     if ( isTempTable( conn, name, ... ) )
     {
-      name <- paste0(name, "\\_\\_\\_%");
       df <- odbcConnectionTables(conn, name, catalog_name = "tempdb", schema_name = "dbo")
     }
     else {
