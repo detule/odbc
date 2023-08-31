@@ -234,4 +234,32 @@ test_that("SQLServer", {
     expect_equal(nrow(dbFetch(rs, n = 0)), 0)
     expect_equal(nrow(dbFetch(rs, n = 10)), 2)
   })
+
+  test_that("isTempTable tests", {
+    con <- DBItest:::connect(DBItest:::get_default_context())
+    expect_true( isTempTable(con, "#myTmp"))
+    expect_true( isTempTable(con, "#myTmp", catalog_name = "tempdb" ))
+    expect_true( isTempTable(con, "#myTmp", catalog_name = "tempdb", schema_name = NULL ))
+    expect_true( isTempTable(con, "#myTmp", catalog_name = "tempdb", schema_name = "dbo" ))
+    expect_true( isTempTable(con, "#myTmp", catalog_name = "tempdb", schema_name = "%" ))
+    expect_true( isTempTable(con, "#myTmp", catalog_name = "%" ))
+    expect_true( isTempTable(con, "#myTmp", catalog_name = NULL ))
+    expect_true( isTempTable(con, "#myTmp", schema_name = "dbo" ))
+    expect_true( !isTempTable(con, "##myTmp"))
+    expect_true( !isTempTable(con, "#myTmp", catalog_name = "abc" ))
+    expect_true( !isTempTable(con, "#myTmp", schema_name = "abc" ))
+  })
+
+  test_that("dbExistsTable accounts for local temp tables", {
+    con <- DBItest:::connect(DBItest:::get_default_context())
+    tbl_name <- "#myTemp"
+    DBI::dbExecute(conn, paste0("CREATE TABLE ", tbl_name, " (
+      id int not null,
+      primary key (id) )"), immediate = TRUE)
+    expect_true( dbExistsTable( con, tbl_name) )
+    expect_true( dbExistsTable( con, tbl_name, catalog_name = "tempdb") )
+    expect_true( dbExistsTable( con, tbl_name, catalog_name = "tempdb", schema_name = "dbo" ) )
+    expect_true( !dbExistsTable( con, tbl_name, catalog_name = "abc", schema_name = "dbo" ) )
+    expect_true( !dbExistsTable( con, tbl_name, catalog_name = "tempdb", schema_name = "abc" ) )
+  })
 })

@@ -1,3 +1,12 @@
+
+#' Helper method used to determine if a table identifier is that
+#' of a temporary table.
+#'
+#' Currently implemented only for select back-ends where
+#' we have a use for it (SQL Server, for example).  Generic, in case
+#' we develop a broader use case.
+isTempTable <- function(conn, name, ...) UseMethod("isTempTable")
+
 # Oracle --------------------------------------------------------------------
 
 # Simple class prototype to avoid messages about unknown classes from setMethod
@@ -218,4 +227,85 @@ setMethod("dbUnquoteIdentifier", c("Microsoft SQL Server", "SQL"),
   function(conn, x, ...) {
     x <- gsub("(\\[)([^\\.]+?)(\\])", "\\2", x)
     callNextMethod( conn, x, ... )
+  })
+
+`isTempTable.Microsoft SQL Server` <- function(conn, name, ...) {
+  args <- list(...)
+  if ( "catalog_name" %in% names(args) ) {
+    catalog_name <- args[["catalog_name"]]
+    if ( !is.null(catalog_name) &&
+        catalog_name != "%" &&
+        length(catalog_name ) > 0 &&
+        catalog_name != "tempdb" ) {
+      return(FALSE)
+    }
+  }
+  if ( "schema_name" %in% names(args) ) {
+    schema_name <- args[["catalog_name"]]
+    if ( !is.null(schema_name) &&
+        schema_name != "%" &&
+        length(schema_name ) > 0 &&
+        schema_name != "dbo" ) {
+      return(FALSE)
+    }
+  }
+
+  if ( !grepl("^[#][^#]", name ) ) {
+    return(FALSE)
+  }
+  return(TRUE)
+}
+
+#' SQL Server specific implementation.
+#'
+#' Local temp tables are stored as
+#' [tempdb].[dbo].[#name]________(padding using underscores)[numeric identifier]
+`isTempTable.Microsoft SQL Server` <- function(conn, name, ...) {
+  args <- list(...)
+  if ( "catalog_name" %in% names(args) ) {
+    catalog_name <- args[["catalog_name"]]
+    if ( !is.null(catalog_name) &&
+        catalog_name != "%" &&
+        length(catalog_name ) > 0 &&
+        catalog_name != "tempdb" ) {
+      return(FALSE)
+    }
+  }
+  if ( "schema_name" %in% names(args) ) {
+    schema_name <- args[["catalog_name"]]
+    if ( !is.null(schema_name) &&
+        schema_name != "%" &&
+        length(schema_name ) > 0 &&
+        schema_name != "dbo" ) {
+      return(FALSE)
+    }
+  }
+
+  if ( !grepl("^[#][^#]", name ) ) {
+    return(FALSE)
+  }
+  return(TRUE)
+}
+
+#' SQL server specific dbExistsTable implementation that accounts for
+#' local temp tables.
+#'
+#' If we can identify that the name is that of a local temp table
+#' then adjust the identifier and query appropriately.
+#'
+#' Note, the implementation here is such that it assumes the metadata attribute is
+#' set such that catalog functions accept wildcard entries.
+setMethod(
+  "dbExistsTable", c("Microsoft SQL Server", "character"),
+  function(conn, name, ...) {
+    stopifnot(length(name) == 1)
+    if ( isTempTable( conn, name, ... ) )
+    {
+      name <- paste0(name, "\\_\\_\\_%");
+      df <- odbcConnectionTables(conn, name, catalog_name = "tempdb", schema_name = "dbo")
+    }
+    else {
+      df <- odbcConnectionTables(conn, name = name, ...)
+    }
+    NROW(df) > 0
   })
