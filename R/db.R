@@ -273,7 +273,6 @@ setMethod("dbUnquoteIdentifier", c("Microsoft SQL Server", "SQL"),
 #' Therefore, in all cases query for \code{name___%}.
 #' @rdname OdbcConnection
 #' @inheritParams DBI::dbExistsTable
-#' @export
 setMethod(
   "dbExistsTable", c("Microsoft SQL Server", "character"),
   function(conn, name, ...) {
