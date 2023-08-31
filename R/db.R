@@ -233,6 +233,10 @@ setMethod("dbUnquoteIdentifier", c("Microsoft SQL Server", "SQL"),
 #'
 #' Local temp tables are stored as
 #' [tempdb].[dbo].[#name]________(padding using underscores)[numeric identifier]
+#'
+#' True if:
+#' - If catalog_name is supplied it must equal "temdb" or "%" ( wildcard )
+#' - Name must start with "#" followd by a non-"#" character
 `isTempTable.Microsoft SQL Server` <- function(conn, name, ...) {
   args <- list(...)
   if ( "catalog_name" %in% names(args) ) {
@@ -259,12 +263,21 @@ setMethod("dbUnquoteIdentifier", c("Microsoft SQL Server", "SQL"),
 #'
 #' Note, the implementation here is such that it assumes the metadata attribute is
 #' set such that catalog functions accept wildcard entries.
+#'
+#' Driver note.  OEM driver will return correctly for
+#' name, catalog_name = "tempdb" in some circumstances.  For exmaple
+#' if the name has no underscores to beginwith.  FreeTDS, will not index
+#' the table correctly unless name is adjusted ( allowed trailing wildcards to
+#' accomodate trailing underscores and postfix ).
+#'
+#' Therefore, in all cases query for [name]___%.
 setMethod(
   "dbExistsTable", c("Microsoft SQL Server", "character"),
   function(conn, name, ...) {
     stopifnot(length(name) == 1)
     if ( isTempTable( conn, name, ... ) )
     {
+      name <- paste0(name, "\\_\\_\\_%");
       df <- odbcConnectionTables(conn, name, catalog_name = "tempdb", schema_name = "dbo")
     }
     else {

@@ -255,8 +255,11 @@ test_that("SQLServer", {
       primary key (id) )"), immediate = TRUE)
     expect_true( dbExistsTable( con, tbl_name) )
     expect_true( dbExistsTable( con, tbl_name, catalog_name = "tempdb") )
+    # Fail because not recognized as temp table ( catalog not tempdb )
     expect_true( !dbExistsTable( con, tbl_name, catalog_name = "abc") )
-    expect_true( !dbExistsTable( con, tbl_name2 ) )
-    expect_true( !dbExistsTable( con, tbl_name3 ) )
+    # Fail because not recognized as temp table ( second char "#" )
+    expect_true( !dbExistsTable( con, tbl_name2, catalog_name = "tempdb" ) )
+    # Fail because table not actually present
+    expect_true( !dbExistsTable( con, tbl_name3, catalog_name = "tempdb" ) )
   })
 })
