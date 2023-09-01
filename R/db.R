@@ -5,6 +5,9 @@
 #' Currently implemented only for select back-ends where
 #' we have a use for it (SQL Server, for example).  Generic, in case
 #' we develop a broader use case.
+#' @param conn OdbcConnection
+#' @param name Table name
+#' @param ... additional parameters to methods
 isTempTable <- function(conn, name, ...) UseMethod("isTempTable")
 
 # Oracle --------------------------------------------------------------------
@@ -212,17 +215,26 @@ setMethod("sqlCreateTable", "DB2/AIX64",
 
 # Microsoft SQL Server ---------------------------------------------------------
 
-# Simple class prototype to avoid messages about unknown classes from setMethod
+#' Simple class prototype to avoid messages about unknown classes from setMethod
+#' @rdname SQLServer
+#' @usage NULL
 setClass("Microsoft SQL Server", where = class_cache)
 
-# For SQL Server, conn@quote will return the quotation mark, however
-# both quotation marks as well as square bracket are used interchangeably for
-# delimited identifiers.  See:
-# https://learn.microsoft.com/en-us/sql/relational-databases/databases/database-identifiers?view=sql-server-ver16
-# Therefore strip the brackets first, and then call the DBI method that strips
-# the quotation marks.
-# TODO: the generic implementation in DBI should take a quote char as
-# parameter.
+#' SQL Server specific implementation.
+#'
+#' For SQL Server, conn@quote will return the quotation mark, however
+#' both quotation marks as well as square bracket are used interchangeably for
+#' delimited identifiers.  See:
+#' \url{https://learn.microsoft.com/en-us/sql/relational-databases/databases/database-identifiers?view=sql-server-ver16}
+#' Therefore strip the brackets first, and then call the DBI method that strips
+#' the quotation marks.
+#' TODO: the generic implementation in DBI should take a quote char as
+#' parameter.
+#'
+#' @rdname SQLServer
+#' @docType methods
+#' @inheritParams DBI::dbUnquoteIdentifier
+#' @usage NULL
 setMethod("dbUnquoteIdentifier", c("Microsoft SQL Server", "SQL"),
   function(conn, x, ...) {
     x <- gsub("(\\[)([^\\.]+?)(\\])", "\\2", x)
@@ -232,11 +244,13 @@ setMethod("dbUnquoteIdentifier", c("Microsoft SQL Server", "SQL"),
 #' SQL Server specific implementation.
 #'
 #' Local temp tables are stored as
-#' [tempdb].[dbo].[#name]________(padding using underscores)[numeric identifier]
+#' \code{ [tempdb].[dbo].[#name]________(padding using underscores)[numeric identifier] }
 #'
 #' True if:
 #' - If catalog_name is supplied it must equal "temdb" or "%" ( wildcard )
 #' - Name must start with "#" followd by a non-"#" character
+#' @rdname SQLServer
+#' @usage NULL
 `isTempTable.Microsoft SQL Server` <- function(conn, name, ...) {
   args <- list(...)
   if ( "catalog_name" %in% names(args) ) {
@@ -255,7 +269,7 @@ setMethod("dbUnquoteIdentifier", c("Microsoft SQL Server", "SQL"),
   return(TRUE)
 }
 
-#' @details SQL server specific dbExistsTable implementation that accounts for
+#' SQL server specific dbExistsTable implementation that accounts for
 #' local temp tables.
 #'
 #' If we can identify that the name is that of a local temp table
@@ -271,8 +285,11 @@ setMethod("dbUnquoteIdentifier", c("Microsoft SQL Server", "SQL"),
 #' accomodate trailing underscores and postfix ).
 #'
 #' Therefore, in all cases query for \code{name___%}.
-#' @rdname OdbcConnection
-#' @inheritParams DBI::dbExistsTable
+#' @rdname SQLServer
+#' @docType methods
+#' @aliases dbExistsTable
+#' @inherit DBI::dbExistsTable
+#' @usage NULL
 setMethod(
   "dbExistsTable", c("Microsoft SQL Server", "character"),
   function(conn, name, ...) {
