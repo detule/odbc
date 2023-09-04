@@ -8,6 +8,7 @@
 #' @param conn OdbcConnection
 #' @param name Table name
 #' @param ... additional parameters to methods
+#' @rdname isTempTable
 #' @export
 setGeneric(
   "isTempTable",
@@ -17,6 +18,7 @@ setGeneric(
   }
 )
 
+#' @rdname isTempTable
 setMethod(
   "isTempTable",
   c("OdbcConnection", "Id"),
@@ -28,6 +30,8 @@ setMethod(
       ...)
   }
 )
+
+#' @rdname isTempTable
 setMethod(
   "isTempTable",
   c("OdbcConnection", "SQL"),
