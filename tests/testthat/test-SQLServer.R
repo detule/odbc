@@ -258,7 +258,7 @@ test_that("SQLServer", {
     expect_warning(sqlCreateTable(con, globTblName, values, temporary = TRUE))
     expect_no_warning(sqlCreateTable(con, globTblName, values, temporary = FALSE))
     expect_warning(sqlCreateTable(con, notTempTblName, values, temporary = TRUE))
-    expect_no_warning(sqlCreateTable(con, noTempTblName, values, temporary = FALSE))
+    expect_no_warning(sqlCreateTable(con, notTempTblName, values, temporary = FALSE))
 
     # These tests need https://github.com/r-dbi/odbc/pull/600
     # Uncomment when both merged.
