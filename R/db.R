@@ -1,3 +1,31 @@
+#' @export
+setGeneric(
+  "isTempTable",
+  valueClass = "logical",
+  function(conn, name, ...) {
+    standardGeneric("isTempTable")
+  }
+)
+
+setMethod(
+  "isTempTable",
+  c("OdbcConnection", "Id"),
+  function(conn, name, ...) {
+    isTempTable(conn,
+      name = id_field(name, "table"),
+      catalog_name = id_field(name, "catalog"),
+      schema_name = id_field(name, "schema"),
+      ...)
+  }
+)
+setMethod(
+  "isTempTable",
+  c("OdbcConnection", "SQL"),
+  function(conn, name, ...) {
+    isTempTable(conn, dbUnquoteIdentifier(conn, name)[[1]], ...)
+  }
+)
+
 # Oracle --------------------------------------------------------------------
 
 # Simple class prototype to avoid messages about unknown classes from setMethod
@@ -219,3 +247,34 @@ setMethod("dbUnquoteIdentifier", c("Microsoft SQL Server", "SQL"),
     x <- gsub("(\\[)([^\\.]+?)(\\])", "\\2", x)
     callNextMethod( conn, x, ... )
   })
+
+setMethod("isTempTable", c("Microsoft SQL Server", "character"),
+  function(conn, name, catalog_name = NULL, schema_name = NULL, ...) {
+    if ( !is.null(catalog_name) &&
+        catalog_name != "%" &&
+        length(catalog_name ) > 0 &&
+        catalog_name != "tempdb" ) {
+      return(FALSE)
+    }
+
+    if ( !grepl("^[#][^#]", name ) ) {
+      return(FALSE)
+    }
+    return(TRUE)
+})
+
+setMethod("sqlCreateTable", "Microsoft SQL Server",
+  function(con, table, fields, row.names = NA, temporary = FALSE, ..., field.types = NULL) {
+    if ( temporary && !isTempTable( con, table ) )
+    {
+      warning(paste0("Temporary flag is set to true, but name argument seems",
+                     " to point to non-local-temp table"))
+    }
+    table <- dbQuoteIdentifier(con, table)
+    fields <- createFields(con, fields, field.types, row.names)
+
+    SQL(paste0(
+      "CREATE TABLE ", table, " (\n",
+      "  ", paste(fields, collapse = ",\n  "), "\n)\n"
+    ))
+})
