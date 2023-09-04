@@ -1,3 +1,45 @@
+
+#' Helper method used to determine if a table identifier is that
+#' of a temporary table.
+#'
+#' Currently implemented only for select back-ends where
+#' we have a use for it (SQL Server, for example).  Generic, in case
+#' we develop a broader use case.
+#' @param conn OdbcConnection
+#' @param name Table name
+#' @param ... additional parameters to methods
+#' @rdname isTempTable
+#' @export
+setGeneric(
+  "isTempTable",
+  valueClass = "logical",
+  function(conn, name, ...) {
+    standardGeneric("isTempTable")
+  }
+)
+
+#' @rdname isTempTable
+setMethod(
+  "isTempTable",
+  c("OdbcConnection", "Id"),
+  function(conn, name, ...) {
+    isTempTable(conn,
+      name = id_field(name, "table"),
+      catalog_name = id_field(name, "catalog"),
+      schema_name = id_field(name, "schema"),
+      ...)
+  }
+)
+
+#' @rdname isTempTable
+setMethod(
+  "isTempTable",
+  c("OdbcConnection", "SQL"),
+  function(conn, name, ...) {
+    isTempTable(conn, dbUnquoteIdentifier(conn, name)[[1]], ...)
+  }
+)
+
 # Oracle --------------------------------------------------------------------
 
 # Simple class prototype to avoid messages about unknown classes from setMethod
@@ -105,12 +147,45 @@ setMethod("sqlCreateTable", "Teradata",
         ))
   })
 
+
 setMethod(
-  "dbListTables", "Teradata",
-  function(conn, ...) {
-    c(dbGetQuery(conn, "HELP VOLATILE TABLE")[["Table SQL Name"]],
-      odbcConnectionTables(conn, ...)$table_name)
-  })
+  "odbcConnectionTables",
+  c("Teradata", "character"),
+  function(conn, name, catalog_name = NULL, schema_name = NULL, table_type = NULL) {
+
+    res <- callNextMethod()
+    if ( !is.null(schema_name) ) {
+      return(res)
+    }
+
+    # Also look through volatile tables if
+    # not querying in a specific schema
+    tempTableNames <- dbGetQuery(conn, "HELP VOLATILE TABLE")[["Table SQL Name"]]
+    # If a name argument is supplied, subset the temp table names vector
+    # to either an exact match, or if pattern value, to an approximate match
+    if ( !is.null( name ) ) {
+      if ( isPatternValue( name ) ) {
+        name <- convertWildCards( name )
+      }
+      else {
+        name <- paste0("^", name, "$")
+      }
+      tempTableNames <- tempTableNames[ grepl(name, tempTableNames) ]
+    }
+
+    navec <- rep( NA_character_, length( tempTableNames ) )
+    rbind(
+      res,
+      data.frame(
+        table_catalog = navec,
+        table_schema = navec,
+        table_name = tempTableNames,
+        table_remarks = navec,
+        stringsAsFactors = FALSE
+      )
+    )
+  }
+)
 
 # SAP HANA ----------------------------------------------------------------
 
@@ -186,3 +261,54 @@ setMethod("dbUnquoteIdentifier", c("Microsoft SQL Server", "SQL"),
     x <- gsub("(\\[)([^\\.]+?)(\\])", "\\2", x)
     callNextMethod( conn, x, ... )
   })
+
+#' SQL Server specific implementation.
+#'
+#' Local temp tables are stored as
+#' \code{ [tempdb].[dbo].[#name]________(padding using underscores)[numeric identifier] }
+#'
+#' True if:
+#' - If catalog_name is supplied it must equal "temdb" or "%" ( wildcard )
+#' - Name must start with "#" followd by a non-"#" character
+#' @rdname SQLServer
+#' @usage NULL
+setMethod("isTempTable", c("Microsoft SQL Server", "character"),
+  function(conn, name, catalog_name = NULL, schema_name = NULL, ...) {
+    if ( !is.null(catalog_name) &&
+        catalog_name != "%" &&
+        length(catalog_name ) > 0 &&
+        catalog_name != "tempdb" ) {
+      return(FALSE)
+    }
+
+    if ( !grepl("^[#][^#]", name ) ) {
+      return(FALSE)
+    }
+    return(TRUE)
+})
+
+#' SQL Server specific implementation.
+#'
+#' Will warn user if `temporary` is set to TRUE but table name does not conform
+#' to local temp table naming conventions.  If writing to a global temp table, user
+#' should not set the temporary flag to TRUE.
+#'
+#' In both cases a simple CREATE TABLE statement is used / the table identifier is
+#' is the differentiator ( viz-a-viz creating a non-temp table ).
+#' @rdname SQLServer
+#' @usage NULL
+setMethod("sqlCreateTable", "Microsoft SQL Server",
+  function(con, table, fields, row.names = NA, temporary = FALSE, ..., field.types = NULL) {
+    if ( temporary && !isTempTable( con, table ) )
+    {
+      warning(paste0("Temporary flag is set to true, but name argument seems",
+                     " to point to non-local-temp table"))
+    }
+    table <- dbQuoteIdentifier(con, table)
+    fields <- createFields(con, fields, field.types, row.names)
+
+    SQL(paste0(
+      "CREATE TABLE ", table, " (\n",
+      "  ", paste(fields, collapse = ",\n  "), "\n)\n"
+    ))
+})
