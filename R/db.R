@@ -1,3 +1,14 @@
+
+#' Helper method used to determine if a table identifier is that
+#' of a temporary table.
+#'
+#' Currently implemented only for select back-ends where
+#' we have a use for it (SQL Server, for example).  Generic, in case
+#' we develop a broader use case.
+#' @param conn OdbcConnection
+#' @param name Table name
+#' @param ... additional parameters to methods
+#' @rdname isTempTable
 #' @export
 setGeneric(
   "isTempTable",
@@ -7,6 +18,7 @@ setGeneric(
   }
 )
 
+#' @rdname isTempTable
 setMethod(
   "isTempTable",
   c("OdbcConnection", "Id"),
@@ -18,6 +30,8 @@ setMethod(
       ...)
   }
 )
+
+#' @rdname isTempTable
 setMethod(
   "isTempTable",
   c("OdbcConnection", "SQL"),
@@ -248,6 +262,16 @@ setMethod("dbUnquoteIdentifier", c("Microsoft SQL Server", "SQL"),
     callNextMethod( conn, x, ... )
   })
 
+#' SQL Server specific implementation.
+#'
+#' Local temp tables are stored as
+#' \code{ [tempdb].[dbo].[#name]________(padding using underscores)[numeric identifier] }
+#'
+#' True if:
+#' - If catalog_name is supplied it must equal "temdb" or "%" ( wildcard )
+#' - Name must start with "#" followd by a non-"#" character
+#' @rdname SQLServer
+#' @usage NULL
 setMethod("isTempTable", c("Microsoft SQL Server", "character"),
   function(conn, name, catalog_name = NULL, schema_name = NULL, ...) {
     if ( !is.null(catalog_name) &&
@@ -263,6 +287,16 @@ setMethod("isTempTable", c("Microsoft SQL Server", "character"),
     return(TRUE)
 })
 
+#' SQL Server specific implementation.
+#'
+#' Will warn user if `temporary` is set to TRUE but table name does not conform
+#' to local temp table naming conventions.  If writing to a global temp table, user
+#' should not set the temporary flag to TRUE.
+#'
+#' In both cases a simple CREATE TABLE statement is used / the table identifier is
+#' is the differentiator ( viz-a-viz creating a non-temp table ).
+#' @rdname SQLServer
+#' @usage NULL
 setMethod("sqlCreateTable", "Microsoft SQL Server",
   function(con, table, fields, row.names = NA, temporary = FALSE, ..., field.types = NULL) {
     if ( temporary && !isTempTable( con, table ) )
