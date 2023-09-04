@@ -238,7 +238,7 @@ test_that("SQLServer", {
   test_that("Create / write to temp table", {
     con <- DBItest:::connect(DBItest:::get_default_context())
     locTblName <- "#myloctmp"
-    globTblName <- "#myglobtmp"
+    globTblName <- "##myglobtmp"
     notTempTblName <- "nottemp"
 
     df <- data.frame( name = c("one", "two"), value = c(1, 2) )
