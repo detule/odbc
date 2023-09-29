@@ -34,6 +34,9 @@
     <loc>https://r-dbi.github.io/odbc/dev/reference/OdbcResult.html</loc>
   </url>
   <url>
+    <loc>https://r-dbi.github.io/odbc/dev/reference/SQLServer.html</loc>
+  </url>
+  <url>
     <loc>https://r-dbi.github.io/odbc/dev/reference/dbConnect-OdbcDriver-method.html</loc>
   </url>
   <url>
@@ -52,6 +55,9 @@
     <loc>https://r-dbi.github.io/odbc/dev/reference/index.html</loc>
   </url>
   <url>
+    <loc>https://r-dbi.github.io/odbc/dev/reference/isTempTable.html</loc>
+  </url>
+  <url>
     <loc>https://r-dbi.github.io/odbc/dev/reference/odbc-package.html</loc>
   </url>
   <url>
@@ -64,10 +70,22 @@
     <loc>https://r-dbi.github.io/odbc/dev/reference/odbcConnectionActions.html</loc>
   </url>
   <url>
+    <loc>https://r-dbi.github.io/odbc/dev/reference/odbcConnectionCatalogs.html</loc>
+  </url>
+  <url>
     <loc>https://r-dbi.github.io/odbc/dev/reference/odbcConnectionColumns.html</loc>
   </url>
   <url>
     <loc>https://r-dbi.github.io/odbc/dev/reference/odbcConnectionIcon.html</loc>
+  </url>
+  <url>
+    <loc>https://r-dbi.github.io/odbc/dev/reference/odbcConnectionSchemas.html</loc>
+  </url>
+  <url>
+    <loc>https://r-dbi.github.io/odbc/dev/reference/odbcConnectionTableTypes.html</loc>
+  </url>
+  <url>
+    <loc>https://r-dbi.github.io/odbc/dev/reference/odbcConnectionTables.html</loc>
   </url>
   <url>
     <loc>https://r-dbi.github.io/odbc/dev/reference/odbcDataType.html</loc>
@@ -98,9 +116,6 @@
   </url>
   <url>
     <loc>https://r-dbi.github.io/odbc/dev/reference/sqlCreateTable-methods.html</loc>
-  </url>
-  <url>
-    <loc>https://r-dbi.github.io/odbc/dev/reference/test_roundtrip.html</loc>
   </url>
   <url>
     <loc>https://r-dbi.github.io/odbc/dev/setup.html</loc>
