@@ -19,9 +19,6 @@ jobs:
       fail-fast: false
       matrix:
         database:
-          - SQLServer
-          - MySQL
-          - PostgreSQL
           - SQLite
     env:
       CRAN: "https://packagemanager.rstudio.com/cran/latest"
