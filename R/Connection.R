@@ -434,6 +434,7 @@ setMethod(
 setMethod(
   "dbSendQuery", c("OdbcConnection", "character"),
   function(conn, statement, params = NULL, ..., immediate = FALSE) {
+    cat("dbSendQuery: enter\n")
     res <- OdbcResult(connection = conn, statement = statement, params = params, immediate = immediate)
     res
   })
@@ -445,6 +446,7 @@ setMethod(
 setMethod(
   "dbSendStatement", c("OdbcConnection", "character"),
   function(conn, statement, params = NULL, ..., immediate = FALSE) {
+    cat("dbSendStatement: enter: ", statement, "\n")
     res <- OdbcResult(connection = conn, statement = statement, params = params, immediate = immediate)
     res
   })
@@ -563,6 +565,7 @@ setMethod(
 #' @export
 setMethod("dbGetQuery", signature("OdbcConnection", "character"),
   function(conn, statement, n = -1, params = NULL, ...) {
+    cat("dbGetQuery: enter\n")
     rs <- dbSendQuery(conn, statement, params = params, ...)
     on.exit(dbClearResult(rs))
 
