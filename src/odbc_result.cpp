@@ -176,7 +176,7 @@ Rcpp::DataFrame odbc_result::fetch(int n_max) {
   try {
     return result_to_dataframe(*r_, n_max);
   } catch (...) {
-    Rcpp::Rcout << "Caught exception in fetch";
+//    Rcpp::Rcout << "Caught exception in fetch";
     c_->set_current_result(nullptr);
     throw;
   }
