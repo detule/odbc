@@ -451,6 +451,16 @@ setMethod(
     res
   })
 
+setMethod("dbExecute", signature("OdbcConnection", "character"), function(conn, statement, ...) {
+  cat("dbExecute enter")
+  rs <- dbSendStatement(conn, statement, ...)
+  cat("dbSendStatement done")
+  on.exit(dbClearResult(rs))
+  cat("Aboute to call dbGetRowsAffected")
+  dbGetRowsAffected(rs)
+  cat("dbGetRowsAffected done")
+})
+
 #' @rdname OdbcConnection
 #' @inheritParams DBI::dbDataType
 #' @export

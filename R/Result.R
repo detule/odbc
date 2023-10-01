@@ -114,7 +114,9 @@ setMethod(
 setMethod(
   "dbGetRowsAffected", "OdbcResult",
   function(res, ...) {
+    cat("dbGetRowsAffected enter")
     result_rows_affected(res@ptr)
+    cat("dbGetRowsAffected done")
   })
 
 #' @rdname OdbcResult
