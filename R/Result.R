@@ -42,7 +42,7 @@ setClass(
 setMethod(
   "dbClearResult", "OdbcResult",
   function(res, ...) {
-    cat("dbClearResult: enter\n")
+#    cat("dbClearResult: enter\n")
     if (!dbIsValid(res)) {
       warning("Result already cleared")
     }
