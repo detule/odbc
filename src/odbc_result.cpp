@@ -213,7 +213,7 @@ bool odbc_result::active() { return c_->is_current_result(this); }
 odbc_result::~odbc_result() {
   if (c_ != nullptr) {
     try {
-      Rcpp::Rcout << "Result destructor";
+      //Rcpp::Rcout << "Result destructor";
       c_->set_current_result(nullptr);
     } catch (...) {
     };
