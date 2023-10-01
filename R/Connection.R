@@ -452,13 +452,13 @@ setMethod(
   })
 
 setMethod("dbExecute", signature("OdbcConnection", "character"), function(conn, statement, ...) {
-  cat("dbExecute enter")
+  cat("dbExecute enter\n")
   rs <- dbSendStatement(conn, statement, ...)
-  cat("dbSendStatement done")
+  cat("dbSendStatement done\n")
   on.exit(dbClearResult(rs))
-  cat("Aboute to call dbGetRowsAffected")
+  cat("Aboute to call dbGetRowsAffected\n")
   dbGetRowsAffected(rs)
-  cat("dbGetRowsAffected done")
+#  cat("dbGetRowsAffected done\n")
 })
 
 #' @rdname OdbcConnection
