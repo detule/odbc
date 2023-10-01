@@ -447,8 +447,7 @@ setMethod(
   "dbSendStatement", c("OdbcConnection", "character"),
   function(conn, statement, params = NULL, ..., immediate = FALSE) {
     cat("dbSendStatement: enter: ", statement, "\n")
-    res <- OdbcResult(connection = conn, statement = statement, params = params, immediate = immediate)
-    res
+    return(OdbcResult(connection = conn, statement = statement, params = params, immediate = immediate))
   })
 
 setMethod("dbExecute", signature("OdbcConnection", "character"), function(conn, statement, ...) {
