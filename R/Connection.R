@@ -445,7 +445,10 @@ setMethod(
 setMethod(
   "dbSendStatement", c("OdbcConnection", "character"),
   function(conn, statement, params = NULL, ..., immediate = FALSE) {
-    res <- OdbcResult(connection = conn, statement = statement, params = params, immediate = immediate)
+    # We are passing this result back to the caller.  Therefore create the result in the calling frame to ensure
+    # that it is not garbage collected when a local incarnation goes out of scope ( as releasing the external resource may
+    # have adverse consequences ).
+    res <- OdbcResult(connection = conn, statement = statement, params = params, immediate = immediate, env = parent.frame())
     res
   })
 
