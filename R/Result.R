@@ -9,13 +9,32 @@ NULL
 #' @docType methods
 NULL
 
-OdbcResult <- function(connection, statement, params = NULL, immediate = FALSE) {
+#' @param env Environment in which to create the OdbcResult object.  This is important since
+#'   when this object is garbage collected, the corresponding C++ resource is also released.  Therefore
+#'   if the [R] result is destroyed in an intermediate frame, results in other frames that are holding
+#'   on to the same resource/external pointer will be affected.  Caller must pass an environment
+#'   in which the result is expected to be operated on.
+OdbcResult <- function(connection, statement, params = NULL, immediate = FALSE, env = parent.frame()) {
   if (nzchar(connection@encoding)) {
     statement <- enc2iconv(statement, connection@encoding)
   }
-  ptr <- new_result(connection@ptr, statement, immediate)
-  res <- new("OdbcResult", connection = connection, statement = statement, ptr = ptr)
 
+  # Make variables needed to create result available in the specified environment
+  assign(".tmpconn", connection, envir = env)
+  assign(".tmpstatement", statement, envir = env)
+  assign(".tmpimmediate", immediate, envir = env)
+
+  # Create result in appropriate environment
+  evalq({
+    ptr <- new_result(.tmpconn@ptr, .tmpstatement, .tmpimmediate)
+    .odbcres <- new("OdbcResult", connection = .tmpconn, statement = .tmpstatement, ptr = ptr)
+    # Cleanup
+    rm(.tmpconn)
+    rm(.tmpstatement)
+    rm(.tmpimmediate)
+  }, envir = env )
+
+  res <- get(".odbcres", envir = env)
   if (!is.null(params)) {
     on.exit(dbClearResult(res))
     dbBind(res, params = params)
