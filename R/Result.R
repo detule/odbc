@@ -22,7 +22,7 @@ OdbcResult <- function(connection, statement, params = NULL, immediate = FALSE) 
     on.exit(NULL)
   }
   #tracemem(res)
-  print(.Internal(address(res)))
+  #print(.Internal(address(res)))
   res
 }
 
