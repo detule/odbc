@@ -448,7 +448,7 @@ setMethod(
   function(conn, statement, params = NULL, ..., immediate = FALSE) {
     cat("dbSendStatement: enter: ", statement, "\n")
     res <- OdbcResult(connection = conn, statement = statement, params = params, immediate = immediate)
-#    print(.Internal(address(res)))
+    print(.Internal(address(res)))
     return(res)
   })
 
