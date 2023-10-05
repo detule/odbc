@@ -448,14 +448,14 @@ setMethod(
   function(conn, statement, params = NULL, ..., immediate = FALSE) {
     cat("dbSendStatement: enter: ", statement, "\n")
     res <- OdbcResult(connection = conn, statement = statement, params = params, immediate = immediate)
-    print(.Internal(address(res)))
+#    print(.Internal(address(res)))
     return(res)
   })
 
 setMethod("dbExecute", signature("OdbcConnection", "character"), function(conn, statement, ...) {
   cat("dbExecute enter\n")
   rs <- dbSendStatement(conn, statement, ...)
-  print(.Internal(address(rs)))
+#  print(.Internal(address(rs)))
   cat("dbSendStatement done\n")
   on.exit(dbClearResult(rs))
   cat("Aboute to call dbGetRowsAffected\n")
