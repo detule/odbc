@@ -21,7 +21,8 @@ OdbcResult <- function(connection, statement, params = NULL, immediate = FALSE) 
     dbBind(res, params = params)
     on.exit(NULL)
   }
-  tracemem(res)
+  #tracemem(res)
+  print(.Internal(address(res)))
   res
 }
 
