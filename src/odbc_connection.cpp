@@ -5,6 +5,10 @@
 namespace odbc {
 
 void odbc_connection::set_current_result(odbc_result* r) {
+	if ( r == nullptr )
+	{
+		Rcpp::Rcout << "setting current result to null\n";
+	}
   if (r == current_result_) {
     return;
   }

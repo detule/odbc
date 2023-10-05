@@ -21,6 +21,8 @@ OdbcResult <- function(connection, statement, params = NULL, immediate = FALSE) 
     dbBind(res, params = params)
     on.exit(NULL)
   }
+  #tracemem(res)
+  #print(.Internal(address(res)))
   res
 }
 
@@ -42,6 +44,7 @@ setClass(
 setMethod(
   "dbClearResult", "OdbcResult",
   function(res, ...) {
+#    cat("dbClearResult: enter\n")
     if (!dbIsValid(res)) {
       warning("Result already cleared")
     }
@@ -113,7 +116,9 @@ setMethod(
 setMethod(
   "dbGetRowsAffected", "OdbcResult",
   function(res, ...) {
+#    cat("dbGetRowsAffected enter\n")
     result_rows_affected(res@ptr)
+#    cat("dbGetRowsAffected done\n")
   })
 
 #' @rdname OdbcResult

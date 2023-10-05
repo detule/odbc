@@ -10,26 +10,26 @@ void result_release(result_ptr r) { r.release(); }
 
 // [[Rcpp::export]]
 bool result_active(result_ptr const& r) {
-  return r.get() != nullptr && r->active();
+  return r.get() != nullptr && (*r)->active();
 }
 
 // [[Rcpp::export]]
-bool result_completed(result_ptr const& r) { return r->complete(); }
+bool result_completed(result_ptr const& r) { return (*r)->complete(); }
 
 // [[Rcpp::export]]
 result_ptr new_result(
     connection_ptr const& p, std::string const& sql, const bool immediate) {
-  return result_ptr(new odbc::odbc_result(*p, sql, immediate));
+  return result_ptr(new std::shared_ptr<odbc::odbc_result>(new odbc::odbc_result(*p, sql, immediate)));
 }
 
 // [[Rcpp::export]]
 List result_fetch(result_ptr const& r, const int n_max = -1) {
-  return r->fetch(n_max);
+  return (*r)->fetch(n_max);
 }
 
 // [[Rcpp::export]]
 Rcpp::DataFrame result_column_info(result_ptr const& r) {
-  auto result = r->result();
+  auto result = (*r)->result();
 
   std::vector<std::string> names;
   std::vector<std::string> field_type;
@@ -46,26 +46,26 @@ Rcpp::DataFrame result_column_info(result_ptr const& r) {
 
 // [[Rcpp::export]]
 void result_bind(result_ptr const& r, List const& params, size_t batch_rows) {
-  r->bind_list(params, false, batch_rows);
+  (*r)->bind_list(params, false, batch_rows);
 }
 
 // [[Rcpp::export]]
-void result_execute(result_ptr const& r) { r->execute(); }
+void result_execute(result_ptr const& r) { (*r)->execute(); }
 
 // [[Rcpp::export]]
 void result_insert_dataframe(
     result_ptr const& r, DataFrame const& df, size_t batch_rows) {
-  r->bind_list(df, true, batch_rows);
+  (*r)->bind_list(df, true, batch_rows);
 }
 
 // [[Rcpp::export]]
 void result_describe_parameters(result_ptr const& r, DataFrame const& df) {
-  r->describe_parameters(df);
+  (*r)->describe_parameters(df);
 }
 
 // [[Rcpp::export]]
 int result_rows_affected(result_ptr const& r) {
-  auto res = r->result();
+  auto res = (*r)->result();
   if (!res) {
     return 0;
   }
@@ -73,7 +73,7 @@ int result_rows_affected(result_ptr const& r) {
 }
 
 // [[Rcpp::export]]
-int result_row_count(result_ptr const& r) { return r->rows_fetched(); }
+int result_row_count(result_ptr const& r) { return (*r)->rows_fetched(); }
 
 // [[Rcpp::export]]
 void column_types(DataFrame const& df) {

@@ -50,9 +50,11 @@ void odbc_result::execute() {
       r_ = std::make_shared<nanodbc::result>(s_->execute());
       num_columns_ = r_->columns();
     } catch (const nanodbc::database_error& e) {
+      Rcpp::Rcout << "Caught exception in execute1\n";
       c_->set_current_result(nullptr);
       throw odbc_error(e, sql_);
     } catch (...) {
+      Rcpp::Rcout << "Caught exception in execute2\n";
       c_->set_current_result(nullptr);
       throw;
     }
@@ -174,6 +176,7 @@ Rcpp::DataFrame odbc_result::fetch(int n_max) {
   try {
     return result_to_dataframe(*r_, n_max);
   } catch (...) {
+    Rcpp::Rcout << "Caught exception in fetch";
     c_->set_current_result(nullptr);
     throw;
   }
@@ -210,6 +213,7 @@ bool odbc_result::active() { return c_->is_current_result(this); }
 odbc_result::~odbc_result() {
   if (c_ != nullptr) {
     try {
+      Rcpp::Rcout << "Result destructor\n";
       c_->set_current_result(nullptr);
     } catch (...) {
     };
