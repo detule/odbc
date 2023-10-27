@@ -150,13 +150,15 @@ setGeneric(
 setMethod(
   "odbcConnectionColumns",
   c("OdbcConnection", "Id"),
-  function(conn, name, column_name = NULL) {
+  function(conn, name, column_name = NULL, force_exact = FALSE) {
 
     odbcConnectionColumns(conn,
       name = id_field(name, "table"),
       catalog_name = id_field(name, "catalog"),
       schema_name = id_field(name, "schema"),
-      column_name = column_name)
+      column_name = column_name,
+      force_exact = force_exact
+    )
   }
 )
 
@@ -167,7 +169,7 @@ setMethod(
 setMethod(
   "odbcConnectionColumns",
   c("OdbcConnection", "character"),
-  function(conn, name, catalog_name = NULL, schema_name = NULL, column_name = NULL) {
+  function(conn, name, catalog_name = NULL, schema_name = NULL, column_name = NULL, force_exact = FALSE) {
 
     connection_sql_columns(conn@ptr,
       table_name = name,
