@@ -40,6 +40,35 @@ setMethod(
   }
 )
 
+# Snowflake --------------------------------------------------------------------
+
+# Simple class prototype to avoid messages about unknown classes from setMethod
+setClass("Snowflake", where = class_cache)
+
+#' @rdname odbcConnectionTables
+#' @details Query, rather than use SQLTables ODBC API for performance reasons on Oracle.
+#' Main functional difference between the implementation of SQLTables ( OEM driver )
+#' and the query below is that the OEM implementation also looks through the synonyms.
+#' Given the performance reports, we sacrifice the synonym look-through for
+#' better execution time.
+setMethod(
+  "odbcConnectionTables",
+  c("Snowflake", "character"),
+  function(conn, name, catalog_name = NULL, schema_name = NULL, table_type = NULL, force_exact = FALSE) {
+
+    qCatalog <- getSelector("table_catalog", catalog_name, force_exact)
+    qSchema <- getSelector("table_schema", schema_name, force_exact)
+    qTable <- getSelector("table_name", name, force_exact)
+    qType <- getSelector("table_type", table_type, force_exact)
+
+    identifier <- DBI::dbQuoteIdentifier(conn, DBI::Id( catalog = catalog_name, schema = "INFORMATION_SCHEMA", name = "TABLES" ))
+    query <- paste0(
+      " SELECT table_catalog AS \"table_catalog\", table_schema AS \"table_schema\", table_name AS \"table_name\", table_type AS \"table_type\", comment AS \"table_remarks\"",
+      " FROM ", identifier,
+      " WHERE 1 = 1 ", qCatalog, qSchema, qTable)
+
+    dbGetQuery(conn, query)
+  })
 # Oracle --------------------------------------------------------------------
 
 # Simple class prototype to avoid messages about unknown classes from setMethod
@@ -65,9 +94,9 @@ setMethod("sqlCreateTable", "Oracle",
 setMethod(
   "odbcConnectionTables",
   c("Oracle", "character"),
-  function(conn, name, catalog_name = NULL, schema_name = NULL, table_type = NULL) {
+  function(conn, name, catalog_name = NULL, schema_name = NULL, table_type = NULL, force_exact = FALSE) {
 
-    qTable <- getSelector("object_name", name)
+    qTable <- getSelector("object_name", name, force_exact)
     if (is.null(schema_name)) {
       query <- paste0(
         " SELECT null AS \"table_catalog\", '", conn@info$username ,"' AS \"table_schema\", object_name AS \"table_name\", object_type AS \"table_type\", null AS \"table_remarks\"",

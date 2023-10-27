@@ -51,7 +51,7 @@ odbc_write_table <-
     if (overwrite && append)
       stop("overwrite and append cannot both be TRUE", call. = FALSE)
 
-    found <- dbExistsTable(conn, name)
+    found <- dbExistsTable(conn, name, force_exact = TRUE)
     if (found && !overwrite && !append) {
       stop("Table ", toString(name), " exists in database, and both overwrite and",
         " append are FALSE", call. = FALSE)
@@ -132,7 +132,7 @@ setMethod(
 #' @export
 setMethod("dbAppendTable", "OdbcConnection", function(conn, name, value, ..., row.names = NULL) {
   stopifnot(is.null(row.names))
-  stopifnot(dbExistsTable(conn, name))
+  stopifnot(dbExistsTable(conn, name, force_exact = TRUE))
   dbWriteTable(conn, name, value, ..., row.names = row.names, append = TRUE)
   invisible(NA_real_)
 })
@@ -207,12 +207,13 @@ createFields <- function(con, fields, field.types, row.names) {
 #' @export
 setMethod(
   "dbExistsTable", c("OdbcConnection", "Id"),
-  function(conn, name, ...) {
+  function(conn, name, ..., force_exact = FALSE) {
     dbExistsTable(
       conn,
       name = id_field(name, "table"),
       catalog_name = id_field(name, "catalog"),
-      schema_name = id_field(name, "schema")
+      schema_name = id_field(name, "schema"),
+      force_exact = force_exact
     )
   })
 
@@ -221,8 +222,8 @@ setMethod(
 #' @export
 setMethod(
   "dbExistsTable", c("OdbcConnection", "SQL"),
-  function(conn, name, ...) {
-    dbExistsTable(conn, dbUnquoteIdentifier(conn, name)[[1]], ...)
+  function(conn, name, ..., force_exact = FALSE) {
+    dbExistsTable(conn, dbUnquoteIdentifier(conn, name)[[1]], ..., force_exact = force_exact)
   })
 
 #' @rdname OdbcConnection
@@ -230,8 +231,8 @@ setMethod(
 #' @export
 setMethod(
   "dbExistsTable", c("OdbcConnection", "character"),
-  function(conn, name, ...) {
+  function(conn, name, ..., force_exact = FALSE) {
     stopifnot(length(name) == 1)
-    df <- odbcConnectionTables(conn, name = name, ...)
+    df <- odbcConnectionTables(conn, name = name, ..., force_exact = force_exact)
     NROW(df) > 0
   })

@@ -234,16 +234,24 @@ setGeneric(
 #' @param table_type List tables of this type, for example 'VIEW'.
 #' See odbcConnectionTableTypes for a listing of available table
 #' types for your connection.
+#' @param force_exact Should the identifier arguments
+#' (catalog, schema, name, type) be interpreted as
+#' having wild cards.  If FALSE we will be looking for objects
+#' matching the passed arguments exactly.  Not implemented for
+#' all backends.  We maintain an exception where the argument
+#' is equal to "%" ( always interpreted as wild card ).
+#' Where implemented, it may offer some performance gains.
 setMethod(
   "odbcConnectionTables",
   c("OdbcConnection", "Id"),
-  function(conn, name, table_type = NULL) {
+  function(conn, name, table_type = NULL, force_exact = FALSE) {
 
     odbcConnectionTables(conn,
       name = id_field(name, "table"),
       catalog_name = id_field(name, "catalog"),
       schema_name = id_field(name, "schema"),
-      table_type = table_type)
+      table_type = table_type,
+      force_exact = force_exact)
   }
 )
 
@@ -252,10 +260,15 @@ setMethod(
 #' available tables
 #' @param schema_name character schema where we wish to query for
 #' available tables.
+#' @param force_exact Should the identifiers be interpreted as
+#' having wild cards.  If FALSE we will be looking for objects
+#' matching the passed arguments exactly.  Not implemented for
+#' all backends.  Where implemented, it may offer some
+#' performance gains.
 setMethod(
   "odbcConnectionTables",
   c("OdbcConnection", "character"),
-  function(conn, name, catalog_name = NULL, schema_name = NULL, table_type = NULL) {
+  function(conn, name, catalog_name = NULL, schema_name = NULL, table_type = NULL, force_exact = FALSE) {
 
     connection_sql_tables(conn@ptr,
       catalog_name = catalog_name,
@@ -270,13 +283,14 @@ setMethod(
 setMethod(
   "odbcConnectionTables",
   c("OdbcConnection"),
-  function(conn, name = NULL, catalog_name = NULL, schema_name = NULL, table_type = NULL) {
+  function(conn, name = NULL, catalog_name = NULL, schema_name = NULL, table_type = NULL, force_exact = FALSE) {
 
     odbcConnectionTables(conn,
       name = "%",
       catalog_name = catalog_name,
       schema_name = schema_name,
-      table_type = table_type)
+      table_type = table_type,
+      force_exact = force_exact)
 
   }
 )
@@ -284,8 +298,8 @@ setMethod(
 #' @rdname odbcConnectionTables
 setMethod(
   "odbcConnectionTables", c("OdbcConnection", "SQL"),
-  function(conn, name, table_type = NULL) {
-    odbcConnectionTables(conn, dbUnquoteIdentifier(conn, name)[[1]], table_type = table_type)
+  function(conn, name, table_type = NULL, force_exact = FALSE) {
+    odbcConnectionTables(conn, dbUnquoteIdentifier(conn, name)[[1]], table_type = table_type, force_exact = force_exact)
   })
 
 #' odbcConnectionCatalogs
