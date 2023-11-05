@@ -40,6 +40,148 @@ setMethod(
   }
 )
 
+# Snowflake --------------------------------------------------------------------
+
+# Simple class prototype to avoid messages about unknown classes from setMethod
+setClass("Snowflake", where = class_cache)
+
+#' @rdname odbcConnectionTables
+#' @details Query, rather than use SQLTables ODBC API for performance reasons on Oracle.
+#' Main functional difference between the implementation of SQLTables ( OEM driver )
+#' and the query below is that the OEM implementation also looks through the synonyms.
+#' Given the performance reports, we sacrifice the synonym look-through for
+#' better execution time.
+setMethod(
+  "odbcConnectionTables",
+  c("Snowflake", "character"),
+  function(conn, name, catalog_name = NULL, schema_name = NULL, table_type = NULL, force_exact = FALSE) {
+
+    cat("Using custom Snowflake tables method\n", file = stderr())
+    qCatalog <- getSelector("table_catalog", catalog_name, force_exact)
+    qSchema <- getSelector("table_schema", schema_name, force_exact)
+    qTable <- getSelector("table_name", name, force_exact)
+    qType <- getSelector("table_type", table_type, force_exact)
+
+    identifier <- DBI::dbQuoteIdentifier(conn, DBI::Id( catalog = catalog_name, schema = "INFORMATION_SCHEMA", name = "TABLES" ))
+    query <- paste0(
+      " SELECT table_catalog AS \"table_catalog\", table_schema AS \"table_schema\", table_name AS \"table_name\", table_type AS \"table_type\", comment AS \"table_remarks\"",
+      " FROM ", identifier,
+      " WHERE 1 = 1 ", qCatalog, qSchema, qTable, qType)
+
+    dbGetQuery(conn, query)
+  })
+
+#' @rdname odbcConnectionColumns
+#' @details Query, rather than use SQLColumns ODBC API for Snowflake, for performance reasons.
+setMethod(
+  "odbcConnectionColumns",
+  c("Snowflake", "character"),
+  function(conn, name, catalog_name = NULL, schema_name = NULL, column_name = NULL, force_exact = FALSE) {
+
+    cat("Using custom Snowflake columns method\n", file = stderr())
+    qCatalog <- getSelector("table_catalog", catalog_name, force_exact)
+    qSchema <- getSelector("table_schema", schema_name, force_exact)
+    qTable <- getSelector("table_name", name, force_exact)
+
+    identifier <- DBI::dbQuoteIdentifier(conn, DBI::Id( catalog = catalog_name, schema = "INFORMATION_SCHEMA", name = "COLUMNS" ))
+    query <- paste0(
+      " SELECT
+        column_name AS \"name\",
+        data_type AS \"field.type\",
+        table_name AS \"table_name\",
+        table_schema AS \"table_schema\",
+        table_catalog AS \"table_catalog\",
+        CASE
+          WHEN ( DATA_TYPE = 'NUMBER' ) THEN   3
+          WHEN ( DATA_TYPE = 'FLOAT'  ) THEN   8
+          WHEN ( DATA_TYPE = 'TEXT' ) THEN   12
+          WHEN ( DATA_TYPE = 'BINARY'  ) THEN   -2
+          WHEN ( DATA_TYPE = 'BOOLEAN' ) THEN   -7
+          WHEN ( DATA_TYPE = 'DATE' ) THEN      91
+          WHEN ( DATA_TYPE = 'TIME') THEN       92
+          WHEN ( DATA_TYPE = 'TIMESTAMP') THEN 93
+          WHEN ( DATA_TYPE = 'TIMESTAMP_TZ') THEN 93
+          WHEN ( DATA_TYPE = 'TIMESTAMP_NTZ') THEN 93
+          WHEN ( DATA_TYPE = 'TIMESTAMP_LTZ') THEN 93
+          ELSE                                  12
+        END AS \"data_type\",
+        CASE
+          WHEN ( DATA_TYPE = 'NUMBER' ) THEN  NUMERIC_PRECISION
+          WHEN ( DATA_TYPE = 'FLOAT'  ) THEN   38
+          WHEN ( DATA_TYPE = 'TEXT' ) THEN     16777216
+          WHEN ( DATA_TYPE = 'BINARY'  ) THEN  8388608
+          WHEN ( DATA_TYPE = 'BOOLEAN' ) THEN  1
+          WHEN ( DATA_TYPE = 'DATE' ) THEN     10
+          WHEN ( DATA_TYPE = 'TIME' ) THEN     18
+          WHEN ( DATA_TYPE = 'TIMESTAMP_NTZ' ) THEN 35
+          WHEN ( DATA_TYPE = 'TIMESTAMP_TZ' )  THEN 35
+          WHEN ( DATA_TYPE = 'TIMESTAMP_NTZ' ) THEN 35
+          WHEN ( DATA_TYPE = 'TIMESTAMP_LTZ' ) THEN 35
+          ELSE 16777216
+        END AS \"column_size\",
+        CASE
+          WHEN ( DATA_TYPE = 'NUMBER' ) THEN  16
+          WHEN ( DATA_TYPE = 'FLOAT'  ) THEN   8
+          WHEN ( DATA_TYPE = 'TEXT' ) THEN     16777216
+          WHEN ( DATA_TYPE = 'BINARY'  ) THEN  8388608
+          WHEN ( DATA_TYPE = 'BOOLEAN' ) THEN  1
+          WHEN ( DATA_TYPE = 'DATE' ) THEN     10
+          WHEN ( DATA_TYPE = 'TIME' ) THEN     18
+          WHEN ( DATA_TYPE = 'TIMESTAMP_NTZ' ) THEN 35
+          WHEN ( DATA_TYPE = 'TIMESTAMP_TZ' )  THEN 35
+          WHEN ( DATA_TYPE = 'TIMESTAMP_NTZ' ) THEN 35
+          WHEN ( DATA_TYPE = 'TIMESTAMP_LTZ' ) THEN 35
+          ELSE 16777216
+        END AS \"buffer_length\",
+        CASE
+          WHEN ( DATA_TYPE = 'DATE' ) THEN     9
+          WHEN ( DATA_TYPE = 'TIME' ) THEN     9
+          WHEN ( DATA_TYPE = 'TIMESTAMP_NTZ' ) THEN 9
+          WHEN ( DATA_TYPE = 'TIMESTAMP_TZ' )  THEN 9
+          WHEN ( DATA_TYPE = 'TIMESTAMP_NTZ' ) THEN 9
+          WHEN ( DATA_TYPE = 'TIMESTAMP_LTZ' ) THEN 9
+          ELSE 0
+        END AS \"decimal_digits\",
+        CASE
+          WHEN ( DATA_TYPE = 'NUMBER' ) THEN  10
+          WHEN ( DATA_TYPE = 'FLOAT'  ) THEN   10
+          ELSE 0
+        END AS \"numeric_precision_radix\",
+        COLUMN_DEFAULT AS \"column_default\",
+        CASE
+          WHEN ( DATA_TYPE = 'NUMBER' ) THEN   3
+          WHEN ( DATA_TYPE = 'FLOAT'  ) THEN   8
+          WHEN ( DATA_TYPE = 'TEXT' ) THEN   12
+          WHEN ( DATA_TYPE = 'BINARY'  ) THEN   -2
+          WHEN ( DATA_TYPE = 'BOOLEAN' ) THEN   -7
+          WHEN ( DATA_TYPE = 'DATE' ) THEN      91
+          WHEN ( DATA_TYPE = 'TIME') THEN       92
+          WHEN ( DATA_TYPE = 'TIMESTAMP') THEN 93
+          WHEN ( DATA_TYPE = 'TIMESTAMP_TZ') THEN 93
+          WHEN ( DATA_TYPE = 'TIMESTAMP_NTZ') THEN 93
+          WHEN ( DATA_TYPE = 'TIMESTAMP_LTZ') THEN 93
+          ELSE                                  12
+        END AS \"sql_data_type\",
+        CASE
+          WHEN ( DATA_TYPE = 'DATE' ) THEN     1
+          WHEN ( DATA_TYPE = 'TIME' ) THEN     2
+          WHEN ( DATA_TYPE = 'TIMESTAMP_NTZ' ) THEN 3
+          WHEN ( DATA_TYPE = 'TIMESTAMP_TZ' )  THEN 3
+          WHEN ( DATA_TYPE = 'TIMESTAMP_NTZ' ) THEN 3
+          WHEN ( DATA_TYPE = 'TIMESTAMP_LTZ' ) THEN 3
+          ELSE 0
+        END AS \"sql_datetime_subtype\",
+        CASE
+          WHEN ( DATA_TYPE = 'BINARY' ) THEN 8388608
+          ELSE IFNULL(CHARACTER_OCTET_LENGTH, 0)
+        END AS \"char_octet_length\",
+        ORDINAL_POSITION AS \"ordinal_position\",
+        IS_NULLABLE AS \"nullable\"
+        ",
+      " FROM ", identifier,
+      " WHERE 1 = 1 ", qCatalog, qSchema, qTable, " ORDER BY ORDINAL_POSITION")
+    res <- dbGetQuery(conn, query)
+  })
 # Oracle --------------------------------------------------------------------
 
 # Simple class prototype to avoid messages about unknown classes from setMethod
@@ -65,9 +207,9 @@ setMethod("sqlCreateTable", "Oracle",
 setMethod(
   "odbcConnectionTables",
   c("Oracle", "character"),
-  function(conn, name, catalog_name = NULL, schema_name = NULL, table_type = NULL) {
+  function(conn, name, catalog_name = NULL, schema_name = NULL, table_type = NULL, force_exact = FALSE) {
 
-    qTable <- getSelector("object_name", name)
+    qTable <- getSelector("object_name", name, force_exact)
     if (is.null(schema_name)) {
       query <- paste0(
         " SELECT null AS \"table_catalog\", '", conn@info$username ,"' AS \"table_schema\", object_name AS \"table_name\", object_type AS \"table_type\", null AS \"table_remarks\"",

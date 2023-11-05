@@ -30,6 +30,7 @@ NULL
 odbc_write_table <-
   function(conn, name, value, overwrite=FALSE, append=FALSE, temporary = FALSE,
     row.names = NA, field.types = NULL, batch_rows = getOption("odbc.batch_rows", NA), ...) {
+    startTime <- Sys.time()
     stopifnot(
       rlang::is_scalar_logical(overwrite) && !is.na(overwrite),
       rlang::is_scalar_logical(append) && !is.na(append),
@@ -51,29 +52,36 @@ odbc_write_table <-
     if (overwrite && append)
       stop("overwrite and append cannot both be TRUE", call. = FALSE)
 
-    found <- dbExistsTable(conn, name)
+    existsStartTime <- Sys.time()
+    found <- dbExistsTable(conn, name, force_exact = TRUE)
+    existsEndTime <- Sys.time()
     if (found && !overwrite && !append) {
       stop("Table ", toString(name), " exists in database, and both overwrite and",
         " append are FALSE", call. = FALSE)
     }
+    removeStartTime <- Sys.time()
     if (found && overwrite) {
       dbRemoveTable(conn, name)
     }
+    removeEndTime <- Sys.time()
 
     values <- sqlData(conn, row.names = row.names, value[, , drop = FALSE])
 
+    createStartTime <- Sys.time()
     if (!found || overwrite) {
       sql <- sqlCreateTable(conn, name, values, field.types = field.types, row.names = FALSE, temporary = temporary)
       dbExecute(conn, sql, immediate = TRUE)
     }
+    createEndTime <- Sys.time()
 
     fieldDetails <- tryCatch({
-      details <- odbcConnectionColumns(conn, name)
+      details <- odbcConnectionColumns(conn, name, force_exact = TRUE)
       details$param_index <- match(details$name, names(values))
       details[!is.na(details$param_index) & !is.na(details$data_type), ]
     }, error = function(e) {
       return(NULL)
     })
+    columnsEndTime <- Sys.time()
 
     if (nrow(value) > 0) {
 
@@ -88,16 +96,32 @@ odbc_write_table <-
         )
       rs <- OdbcResult(conn, sql)
 
+      describeStartTime <- Sys.time()
       if (!is.null(fieldDetails) && nrow(fieldDetails) == nparam) {
         result_describe_parameters(rs@ptr, fieldDetails)
       }
+      describeEndTime <- Sys.time()
 
       tryCatch(
         result_insert_dataframe(rs@ptr, values, batch_rows),
         finally = dbClearResult(rs)
         )
+      endTime <- Sys.time()
     }
 
+    dbg <- sprintf("Total time:            %f\n\t[R] work:      %f\n\tExists:        %f\n\t[R] work:      %f\n\tRemove work:   %f\n\t[R] work:      %f\n\tCreate work:   %f\n\tColumns work:  %f\n\tResult work:   %f\n\tDescribe work: %f\n\tWrite work:    %f\n",
+            as.numeric(endTime - startTime),
+            as.numeric(existsStartTime - startTime),
+            as.numeric(existsEndTime - existsStartTime),
+            as.numeric(removeStartTime - existsEndTime),
+            as.numeric(removeEndTime - removeStartTime),
+            as.numeric(createStartTime - removeEndTime),
+            as.numeric(createEndTime - createStartTime),
+            as.numeric(columnsEndTime - createEndTime),
+            as.numeric(describeStartTime - columnsEndTime),
+            as.numeric(describeEndTime - describeStartTime),
+            as.numeric(endTime - describeEndTime))
+    cat(dbg, file = stderr())
     invisible(TRUE)
   }
 
@@ -132,7 +156,7 @@ setMethod(
 #' @export
 setMethod("dbAppendTable", "OdbcConnection", function(conn, name, value, ..., row.names = NULL) {
   stopifnot(is.null(row.names))
-  stopifnot(dbExistsTable(conn, name))
+  stopifnot(dbExistsTable(conn, name, force_exact = TRUE))
   dbWriteTable(conn, name, value, ..., row.names = row.names, append = TRUE)
   invisible(NA_real_)
 })
@@ -207,12 +231,13 @@ createFields <- function(con, fields, field.types, row.names) {
 #' @export
 setMethod(
   "dbExistsTable", c("OdbcConnection", "Id"),
-  function(conn, name, ...) {
+  function(conn, name, ..., force_exact = FALSE) {
     dbExistsTable(
       conn,
       name = id_field(name, "table"),
       catalog_name = id_field(name, "catalog"),
-      schema_name = id_field(name, "schema")
+      schema_name = id_field(name, "schema"),
+      force_exact = force_exact
     )
   })
 
@@ -221,8 +246,8 @@ setMethod(
 #' @export
 setMethod(
   "dbExistsTable", c("OdbcConnection", "SQL"),
-  function(conn, name, ...) {
-    dbExistsTable(conn, dbUnquoteIdentifier(conn, name)[[1]], ...)
+  function(conn, name, ..., force_exact = FALSE) {
+    dbExistsTable(conn, dbUnquoteIdentifier(conn, name)[[1]], ..., force_exact = force_exact)
   })
 
 #' @rdname OdbcConnection
@@ -230,8 +255,8 @@ setMethod(
 #' @export
 setMethod(
   "dbExistsTable", c("OdbcConnection", "character"),
-  function(conn, name, ...) {
+  function(conn, name, ..., force_exact = FALSE) {
     stopifnot(length(name) == 1)
-    df <- odbcConnectionTables(conn, name = name, ...)
+    df <- odbcConnectionTables(conn, name = name, ..., force_exact = force_exact)
     NROW(df) > 0
   })

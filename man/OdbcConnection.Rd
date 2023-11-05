@@ -54,11 +54,11 @@
 
 \S4method{dbRollback}{OdbcConnection}(conn, ...)
 
-\S4method{dbExistsTable}{OdbcConnection,Id}(conn, name, ...)
+\S4method{dbExistsTable}{OdbcConnection,Id}(conn, name, ..., force_exact = FALSE)
 
-\S4method{dbExistsTable}{OdbcConnection,SQL}(conn, name, ...)
+\S4method{dbExistsTable}{OdbcConnection,SQL}(conn, name, ..., force_exact = FALSE)
 
-\S4method{dbExistsTable}{OdbcConnection,character}(conn, name, ...)
+\S4method{dbExistsTable}{OdbcConnection,character}(conn, name, ..., force_exact = FALSE)
 }
 \arguments{
 \item{object}{Any R object}
