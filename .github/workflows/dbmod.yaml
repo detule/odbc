@@ -75,5 +75,5 @@ jobs:
 
       - name: Test
         run: |
-        library(odbc);odbc::odbcListDataSources();odbc::odbcListDrivers()
+          testthat::test_local(filter = "driver-oracle", reporter = testthat::ProgressReporter$new(max_failures = Inf, update_interval = Inf))
         shell: Rscript {0}
