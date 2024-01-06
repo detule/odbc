@@ -58,7 +58,7 @@ jobs:
       - name: Install Oracle Driver
         run: |
           .github/odbc/install-oracle-driver.sh
-          echo "ODBC_CS_ORACLE=dsn=Oracle" >> $GITHUB_ENV
+          echo "ODBC_CS_ORACLE=dsn=Oracle;UID=RodbcR;PWD=Password12;DBQ=TEST" >> $GITHUB_ENV
 
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
