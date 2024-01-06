@@ -7,6 +7,7 @@ unzip instantclient-odbc-linux.x64-21.8.0.0.0dbru.zip
 rm *.zip
 sudo ln -s /opt/oracle/instantclient_21_8/libclntsh.so.21.1 /usr/local/lib/
 sudo ln -s /opt/oracle/instantclient_21_8/libclntshcore.so.21.1 /usr/local/lib/
+sudo pn -s /opt/oracle/instantclient_21_8/libnnz21.so /usr/local/lib
 sudo ldconfig
 ldd instantclient_21_8/libsqora.so.21.1
 #sh instantclient_21_8/odbc_update_ini.sh / /opt/oracle/instantclient_21_8/
