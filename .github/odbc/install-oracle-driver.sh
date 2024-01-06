@@ -5,5 +5,6 @@ cd /opt/oracle/
 unzip instantclient-basic-linux.x64-21.8.0.0.0dbru.zip
 unzip instantclient-odbc-linux.x64-21.8.0.0.0dbru.zip
 rm *.zip
-sh instantclient_21_8/odbc_update_ini.sh / /opt/oracle/instantclient_21_8/
+ldd instantclient_21_8/libsqora.so.21.1
+#sh instantclient_21_8/odbc_update_ini.sh / /opt/oracle/instantclient_21_8/
 
