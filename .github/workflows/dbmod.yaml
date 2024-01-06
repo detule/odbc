@@ -1,0 +1,60 @@
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+
+name: DBsMOD (Linux)
+
+jobs:
+  database:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres
+        ports:
+        - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
+        ports:
+        - 1433:1433
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: Password12
+      oracle:
+        image: gvenzl/oracle-xe:21.3.0
+        ports:
+          - 1521:1521
+        env:
+          ORACLE_RANDOM_PASSWORD: true
+          ORACLE_DATABASE: test
+          APP_USER: RodbcR
+          APP_USER_PASSWORD: Password12
+        options: >-
+          --health-cmd healthcheck.sh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      CRAN: "https://packagemanager.rstudio.com/cran/__linux__/jammy/latest"
+      ODBCSYSINI: ${{ github.workspace }}/.github/odbc
+      TNS_ADMIN: ${{ github.workspace }}/.github/odbc
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+
+      - name: Install Oracle Driver
+        run: |
+          .github/odbc/install-oracle-driver.sh
+          echo "ODBC_CS_ORACLE=dsn=Oracle" >> $GITHUB_ENV
