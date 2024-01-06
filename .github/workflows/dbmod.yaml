@@ -59,6 +59,7 @@ jobs:
         run: |
           .github/odbc/install-oracle-driver.sh
           echo "ODBC_CS_ORACLE=dsn=Oracle" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=/opt/oracle/instantclient_21_8:$LD_LIBRARY_PATH" >> $GITHUB_ENV
 
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
