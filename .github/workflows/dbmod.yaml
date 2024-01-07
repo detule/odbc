@@ -34,6 +34,7 @@ jobs:
       CRAN: "https://packagemanager.rstudio.com/cran/__linux__/jammy/latest"
       ODBCSYSINI: ${{ github.workspace }}/.github/odbc
       TNS_ADMIN: ${{ github.workspace }}/.github/odbc
+      ORACLE_HOME: ${{ github.workspace }}/.github/odbc
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
