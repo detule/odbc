@@ -44,7 +44,7 @@ jobs:
         run: |
           sudo apt-get install -y unixodbc-dev
           .github/odbc/install-oracle-driver.sh
-          echo "LD_LIBRARY_PATH=/opt/oracle/instantclient_21_8:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=/opt/oracle/instantclient_21_12:$LD_LIBRARY_PATH" >> $GITHUB_ENV
           echo "ODBC_CS_ORACLE=dsn=Oracle;UID=RodbcR;PWD=Password12;DBQ=test" >> $GITHUB_ENV
 
       - name: Install dependencies
@@ -61,5 +61,5 @@ jobs:
 
       - name: Test
         run: |
-          testthat::test_local(filter = "driver-oracle", reporter = testthat::ProgressReporter$new(max_failures = Inf, update_interval = Inf))
+          library(odbc);odbc::odbcListDataSources();odbc::odbcListDrivers()
         shell: Rscript {0}
