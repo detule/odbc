@@ -64,6 +64,10 @@ jobs:
                 library(odbc);odbc::odbcListDataSources();odbc::odbcListDrivers();DBI::dbConnect(odbc::odbc(), dsn="Oracle", DBQ="test", UID="RODBCR", PWD="Password12")
         shell: Rscript {0}
 
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+
       - name: Debug
         run: |
           cat /tmp/odbctrace.out
