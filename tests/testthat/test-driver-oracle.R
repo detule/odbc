@@ -8,8 +8,11 @@ test_that("Oracle", {
 
   # Long/outstanding issue with batch inserting
   # date/datetime for Oracle.  See for example
-  # #349
-  test_roundtrip(columns = c("date", "datetime"))
+  # #349.
+  # There also looks like there are issues related
+  # to binary elements of size zero.
+  # Finally, no boolean in Oracle prior to 23
+  test_roundtrip(columns = c("time", "date", "datetime", "binary", "logical"))
 
   local({
     # Test custom dbExistsTable implementation for
