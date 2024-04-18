@@ -86,9 +86,10 @@ private:
   // and call execute or execute_direct as needed.
   //
   // @param immediate If false, will prepare and execute
-  // a statement against this-sql_.  If true, will call
+  // a statement against this->sql_.  If true, will call
   // nanodbc::statement::execute_direct ( without preparing ).
   void execute(const bool immediate);
+  void execute_async(const bool immediate);
   void bind_columns(
       nanodbc::statement& statement,
       r_type type,

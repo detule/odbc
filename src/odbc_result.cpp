@@ -3,6 +3,7 @@
 #include "time_zone.h"
 #include <chrono>
 #include <memory>
+#include <future>
 
 namespace odbc {
 
@@ -18,6 +19,7 @@ odbc_result::odbc_result(
 
   c_->cancel_current_result(false);
   execute(immediate);
+//  execute_async(immediate);
 }
 
 std::shared_ptr<odbc_connection> odbc_result::connection() const {
@@ -28,6 +30,37 @@ std::shared_ptr<nanodbc::statement> odbc_result::statement() const {
 }
 std::shared_ptr<nanodbc::result> odbc_result::result() const {
   return std::shared_ptr<nanodbc::result>(r_);
+}
+
+void odbc_result::execute_async(const bool immediate) {
+
+  std::exception_ptr eptr;
+  auto future = std::async(std::launch::async, [this, &eptr, &immediate]() {
+    try {
+      execute(immediate);
+    } catch (...) {
+      eptr = std::current_exception();
+    }
+    return;
+  });
+
+  std::future_status status;
+  do {
+    status = future.wait_for(std::chrono::seconds(1));
+    if (status != std::future_status::ready) {
+      try {
+        Rcpp::checkUserInterrupt();
+      } catch (const Rcpp::internal::InterruptedException& e) {
+        Rcpp::warning("Caught user interrupt, attempting a clean exit\n");
+        c_->set_current_result(nullptr);
+        s_.reset();
+        throw;
+      }
+    }
+  } while (status != std::future_status::ready);
+  if (eptr) {
+    std::rethrow_exception(eptr);
+  }
 }
 
 void odbc_result::execute(const bool immediate) {
