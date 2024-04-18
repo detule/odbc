@@ -18,8 +18,8 @@ odbc_result::odbc_result(
       output_encoder_(Iconv(c_->encoding(), "UTF-8")) {
 
   c_->cancel_current_result(false);
-  execute(immediate);
-//  execute_async(immediate);
+//  execute(immediate);
+  execute_async(immediate);
 }
 
 std::shared_ptr<odbc_connection> odbc_result::connection() const {
@@ -73,6 +73,7 @@ void odbc_result::execute(const bool immediate) {
       r_ = std::make_shared<nanodbc::result>(
           immediate ? s_->execute_direct(*c_->connection(), sql_) :
           s_->execute());
+      num_columns_ = r_->columns();
     }
   } catch (const nanodbc::database_error& e) {
     c_->set_current_result(nullptr);
