@@ -19,7 +19,13 @@ odbc_result::odbc_result(
 
   c_->cancel_current_result(false);
 //  execute(immediate);
-  execute_async(immediate);
+//  execute_async(immediate);
+
+  static auto func = [this]( const bool imdt ) {
+    this->execute(imdt);
+  };
+
+  run_interruptible( std::bind( func, immediate ) );
 }
 
 std::shared_ptr<odbc_connection> odbc_result::connection() const {
@@ -32,12 +38,12 @@ std::shared_ptr<nanodbc::result> odbc_result::result() const {
   return std::shared_ptr<nanodbc::result>(r_);
 }
 
-void odbc_result::execute_async(const bool immediate) {
+void odbc_result::run_interruptible(const std::function<void()>& func) {
 
   std::exception_ptr eptr;
-  auto future = std::async(std::launch::async, [this, &eptr, &immediate]() {
+  auto future = std::async(std::launch::async, [&func, &eptr]() {
     try {
-      execute(immediate);
+      func();
     } catch (...) {
       eptr = std::current_exception();
     }
