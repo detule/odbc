@@ -15,17 +15,15 @@ odbc_result::odbc_result(
       num_columns_(0),
       complete_(0),
       bound_(false),
+      immediate_(immediate),
       output_encoder_(Iconv(c_->encoding(), "UTF-8")) {
 
   c_->cancel_current_result(false);
 //  execute(immediate);
 //  execute_async(immediate);
 
-  static auto func = [this]( const bool imdt ) {
-    this->execute(imdt);
-  };
-
-  run_interruptible( std::bind( func, immediate ) );
+  auto exc = std::mem_fn(&odbc_result::execute);
+  run_interruptible( std::bind(exc, this) );
 }
 
 std::shared_ptr<odbc_connection> odbc_result::connection() const {
@@ -57,27 +55,30 @@ void odbc_result::run_interruptible(const std::function<void()>& func) {
       try {
         Rcpp::checkUserInterrupt();
       } catch (const Rcpp::internal::InterruptedException& e) {
-        Rcpp::warning("Caught user interrupt, attempting a clean exit\n");
+        Rcpp::Rcout<<"Caught user interrupt, attempting a clean exit...\n";
         c_->set_current_result(nullptr);
+        s_->close();
         s_.reset();
+      } catch (...) {
         throw;
       }
     }
   } while (status != std::future_status::ready);
   if (eptr) {
+    // An exception was thrown in the thread
     std::rethrow_exception(eptr);
   }
 }
 
-void odbc_result::execute(const bool immediate) {
+void odbc_result::execute() {
   try {
     c_->set_current_result(this);
     s_ = std::make_shared<nanodbc::statement>();
-    if (!immediate) s_->prepare(*c_->connection(), sql_);
-    if (immediate || (s_->parameters() == 0)) {
+    if (!this->immediate_) s_->prepare(*c_->connection(), sql_);
+    if (this->immediate_ || (s_->parameters() == 0)) {
       bound_ = true;
       r_ = std::make_shared<nanodbc::result>(
-          immediate ? s_->execute_direct(*c_->connection(), sql_) :
+          this->immediate_ ? s_->execute_direct(*c_->connection(), sql_) :
           s_->execute());
       num_columns_ = r_->columns();
     }

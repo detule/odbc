@@ -69,6 +69,7 @@ private:
   int num_columns_;
   bool complete_;
   bool bound_;
+  bool immediate_;
   Iconv output_encoder_;
 
   std::map<short, std::vector<std::string>> strings_;
@@ -88,7 +89,7 @@ private:
   // @param immediate If false, will prepare and execute
   // a statement against this->sql_.  If true, will call
   // nanodbc::statement::execute_direct ( without preparing ).
-  void execute(const bool immediate);
+  void execute();
 //  void execute_async(const bool immediate);
   void run_interruptible(const std::function<void()>& func);
   void bind_columns(
