@@ -7,6 +7,7 @@
 
 #include <Rcpp.h>
 #include "sql_types.h"
+#include "odbc_result.h"
 #include "nanodbc.h"
 
 namespace odbc {
@@ -44,5 +45,6 @@ namespace utils {
   /// \param token The authentication token.
   /// \return A shared pointer to the buffer containing the serialized structure.
   std::shared_ptr< void > serialize_azure_token( const std::string& token );
+  void run_interruptible(const std::function<void()>& exec_fn, const std::function<void()>& cleanup_fn);
 }}
 #endif

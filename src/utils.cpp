@@ -1,5 +1,6 @@
 #include <memory>
 #include <string>
+#include <future>
 #include "utils.h"
 
 namespace odbc {
@@ -45,6 +46,38 @@ namespace utils {
               SQL_COPT_SS_ACCESS_TOKEN, SQL_IS_POINTER, buffer.get()));
         buffer_context.push_back( buffer );
       }
+    }
+  }
+
+  void run_interruptible(const std::function<void()>& exec_fn, const std::function<void()>& cleanup_fn)
+  {
+    std::exception_ptr eptr;
+    auto future = std::async(std::launch::async, [&exec_fn, &eptr]() {
+      try {
+        exec_fn();
+      } catch (...) {
+        eptr = std::current_exception();
+      }
+      return;
+    });
+
+    std::future_status status;
+    do {
+      status = future.wait_for(std::chrono::seconds(1));
+      if (status != std::future_status::ready) {
+        try {
+          Rcpp::checkUserInterrupt();
+        } catch (const Rcpp::internal::InterruptedException& e) {
+          Rcpp::Rcout<<"Caught user interrupt, attempting a clean exit...\n";
+          cleanup_fn();
+        } catch (...) {
+          throw;
+        }
+      }
+    } while (status != std::future_status::ready);
+    if (eptr) {
+      // An exception was thrown in the thread
+      std::rethrow_exception(eptr);
     }
   }
 }}

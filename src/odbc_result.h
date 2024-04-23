@@ -90,8 +90,7 @@ private:
   // a statement against this->sql_.  If true, will call
   // nanodbc::statement::execute_direct ( without preparing ).
   void execute();
-//  void execute_async(const bool immediate);
-  void run_interruptible(const std::function<void()>& func);
+
   void bind_columns(
       nanodbc::statement& statement,
       r_type type,
