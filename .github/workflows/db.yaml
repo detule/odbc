@@ -68,16 +68,13 @@ jobs:
       - name: Install SQLite Driver
         run: |
           sudo apt-get install -y libsqliteodbc
-          echo "ODBC_CS_SQLITE=dsn=SQLite" >> $GITHUB_ENV
 
       - name: Install PostgreSQL Driver
         run: |
           sudo apt-get install -y unixodbc-dev odbc-postgresql devscripts
-          echo "ODBC_CS_POSTGRES=dsn=PostgreSQL" >> $GITHUB_ENV
 
       - name: Install SQL Server Driver
         run: |
-          echo "ODBC_CS_SQLSERVER=dsn=MicrosoftSQLServer;UID=SA;PWD=Password12" >> $GITHUB_ENV
           sudo bash -c "
             curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
             && curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list > /etc/apt/sources.list.d/mssql-release.list \
@@ -89,11 +86,9 @@ jobs:
         run: |
           .github/odbc/install-oracle-driver.sh
           echo "LD_LIBRARY_PATH=/opt/oracle/instantclient_21_12:$LD_LIBRARY_PATH" >> $GITHUB_ENV
-          echo "ODBC_CS_ORACLE=dsn=Oracle;UID=RodbcR;PWD=Password12;DBQ=test" >> $GITHUB_ENV
 
       - name: Install Snowflake Driver
         run: |
-          echo "ODBC_CS_SNOWFLAKE=dsn=Snowflake;pwd=${{ secrets.SNOWFLAKE_PWD }}" >> $GITHUB_ENV
           curl https://sfc-repo.snowflakecomputing.com/odbc/linux/3.2.0/snowflake_linux_x8664_odbc-3.2.0.tgz --output snowflake_linux_x8664_odbc-3.2.0.tgz
           gunzip snowflake_linux_x8664_odbc-3.2.0.tgz
           tar -xvf snowflake_linux_x8664_odbc-3.2.0.tar
@@ -116,5 +111,5 @@ jobs:
 
       - name: Test
         run: |
-          testthat::test_local(reporter = testthat::ProgressReporter$new(max_failures = Inf, update_interval = Inf))
+          testthat::test_local(reporter = testthat::ProgressReporter$new(max_failures = 1, update_interval = 1))
         shell: Rscript {0}
