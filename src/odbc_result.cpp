@@ -26,7 +26,7 @@ odbc_result::odbc_result(
       this->s_->close();
       this->s_.reset();
   };
-  odbc::utils::run_interruptible(cleanup_fn, std::bind(exc, this));
+  odbc::utils::run_interruptible(std::bind(exc, this), cleanup_fn);
 }
 
 std::shared_ptr<odbc_connection> odbc_result::connection() const {
