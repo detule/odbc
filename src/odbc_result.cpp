@@ -1,6 +1,7 @@
 #include "odbc_result.h"
 #include "integer64.h"
 #include "time_zone.h"
+#include "utils.h"
 #include <chrono>
 #include <memory>
 
@@ -14,26 +15,20 @@ odbc_result::odbc_result(
       num_columns_(0),
       complete_(0),
       bound_(false),
+      immediate_(immediate),
       output_encoder_(Iconv(c_->encoding(), "UTF-8")) {
 
   c_->cancel_current_result(false);
 
-  if (immediate) {
-    s_ = std::make_shared<nanodbc::statement>();
-    bound_ = true;
-    r_ = std::make_shared<nanodbc::result>(
-        s_->execute_direct(*c_->connection(), sql_));
-    num_columns_ = r_->columns();
-    c_->set_current_result(this);
-  } else {
-    prepare();
-    c_->set_current_result(this);
-    if (s_->parameters() == 0) {
-      bound_ = true;
-      execute();
-    }
-  }
+  auto exc = std::mem_fn(&odbc_result::execute);
+  auto cleanup_fn = [this]() {
+      this->c_->set_current_result(nullptr);
+      this->s_->close();
+      this->s_.reset();
+  };
+  odbc::utils::run_interruptible(std::bind(exc, this), cleanup_fn);
 }
+
 std::shared_ptr<odbc_connection> odbc_result::connection() const {
   return std::shared_ptr<odbc_connection>(c_);
 }
@@ -43,21 +38,25 @@ std::shared_ptr<nanodbc::statement> odbc_result::statement() const {
 std::shared_ptr<nanodbc::result> odbc_result::result() const {
   return std::shared_ptr<nanodbc::result>(r_);
 }
-void odbc_result::prepare() {
-  s_ = std::make_shared<nanodbc::statement>(*c_->connection(), sql_);
-}
+
 void odbc_result::execute() {
-  if (!r_) {
-    try {
-      r_ = std::make_shared<nanodbc::result>(s_->execute());
+  try {
+    c_->set_current_result(this);
+    s_ = std::make_shared<nanodbc::statement>();
+    if (!this->immediate_) s_->prepare(*c_->connection(), sql_);
+    if (this->immediate_ || (s_->parameters() == 0)) {
+      bound_ = true;
+      r_ = std::make_shared<nanodbc::result>(
+          this->immediate_ ? s_->execute_direct(*c_->connection(), sql_) :
+          s_->execute());
       num_columns_ = r_->columns();
-    } catch (const nanodbc::database_error& e) {
-      c_->set_current_result(nullptr);
-      throw odbc_error(e, sql_, output_encoder_);
-    } catch (...) {
-      c_->set_current_result(nullptr);
-      throw;
     }
+  } catch (const nanodbc::database_error& e) {
+    c_->set_current_result(nullptr);
+    throw odbc_error(e, sql_, output_encoder_);
+  } catch (...) {
+    c_->set_current_result(nullptr);
+    throw;
   }
 }
 
