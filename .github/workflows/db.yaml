@@ -109,6 +109,10 @@ jobs:
           LIB_DIR: /usr/lib/x86_64-linux-gnu/
           INCLUDE_DIR: /usr/include
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        with:
+          detached: true        
       - name: Test
         run: |
           testthat::test_local(reporter = testthat::ProgressReporter$new(max_failures = 1, update_interval = 1))
