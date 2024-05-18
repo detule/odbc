@@ -1,5 +1,11 @@
 # odbc (development version)
 
+* Long running queries can now be interrupted using Ctrl-C.  This
+  feature is enabled by default and can be controlled by the `interruptible`
+  argument to `dbConnect`, or by the global option `odbc.interruptible`.
+  Should be considered experimental - if you experience problems please
+  file an issue on the package github repository (#796)
+
 * Transitioned to the cli package for formatting most error messages 
   (@simonpcouch, #781, #784, #785, #788).
 
