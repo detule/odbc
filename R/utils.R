@@ -288,7 +288,7 @@ check_attributes <- function(attributes, call = caller_env()) {
 }
 
 # apple + spark drive config (#651) --------------------------------------------
-configure_spark <- function(call = caller_env()) {
+configure_simba <- function(locate_config_callback, action = "modify", call = caller_env()) {
   if (!is_macos()) {
     return(invisible())
   }
@@ -298,8 +298,8 @@ configure_spark <- function(call = caller_env()) {
     error_install_unixodbc(call)
   }
 
-  spark_config <- locate_config_spark()
-  if (length(spark_config) == 0) {
+  simba_config <- locate_config_callback()
+  if (length(simba_config) == 0) {
     abort(
       c(
         "Unable to locate the needed spark ODBC driver.",
@@ -309,7 +309,7 @@ configure_spark <- function(call = caller_env()) {
     )
   }
 
-  configure_unixodbc_spark(unixodbc_install[1], spark_config[1], call)
+  configure_unixodbc_simba(unixodbc_install[1], simba_config[1], action, call)
 }
 
 locate_install_unixodbc <- function() {
@@ -390,25 +390,65 @@ locate_config_spark <- function() {
   )
 }
 
-configure_unixodbc_spark <- function(unixodbc_install, spark_config, call) {
-  # As shipped, the simba spark ini has an incomplete final line
-  suppressWarnings(
-    spark_lines <- readLines(spark_config)
+locate_config_snowflake <- function() {
+  # Posit configuration is likely at:
+  # /opt/snowflake-osx-x64/bin/lib/rstudio.snowflakeodbc.ini
+  # OEM configuration is likely at:
+  # /opt/snowflake/snowflakeodbc/lib/universal/simba.snowflake.ini
+  spark_env <- Sys.getenv("SIMBASNOWFLAKEINI")
+  if (!identical(spark_env, "")) {
+    return(spark_env)
+  }
+
+  common_dirs <- c(
+    "/opt/snowflake-osx-x64/bin/lib/",
+    "/opt/snowflake/snowflakeodbc/lib/universal/",
+    getwd(),
+    Sys.getenv("HOME")
   )
 
-  spark_lines_new <- replace_or_append(
-    lines = spark_lines,
+  list.files(
+    common_dirs,
+    pattern = "snowflake(odbc)?\\.ini$",
+    full.names = TRUE
+  )
+}
+
+configure_unixodbc_simba <- function(unixodbc_install, simba_config, action, call) {
+
+  # As shipped, the simba spark ini has an incomplete final line
+  suppressWarnings(
+    simba_lines <- readLines(simba_config)
+  )
+  res <- replace_or_append(
+    lines = simba_lines,
     pattern = "^ODBCInstLib=",
     replacement = paste0("ODBCInstLib=", unixodbc_install)
   )
-
-  spark_lines_new <- replace_or_append(
-    lines = spark_lines_new,
+  if (action != "modify" && res$replaced) {
+    cli::cli_warn(
+      paste0("Detected potentially unsafe driver settings. ",
+       "Please consider revising the `ODBCInstLib` setting in ", simba_config)
+    )
+  }
+  simba_lines_new <- res$new_lines
+  res <- replace_or_append(
+    lines = simba_lines_new,
     pattern = "^DriverManagerEncoding=",
     replacement = "DriverManagerEncoding=UTF-16"
   )
+  if (action != "modify" && res$replaced) {
+    cli::cli_warn(
+      paste0("Detected potentially unsafe driver settings. ",
+       "Please consider revising the `DriverManagerEncoding` setting in ",
+       simba_config)
+    )
+  }
+  simba_lines_new <- res$new_lines
 
-  write_spark_lines(spark_lines, spark_lines_new, spark_config, call)
+  if (action == "modify") {
+    write_simba_lines(simba_lines, simba_lines_new, simba_config, call)
+  }
 
   invisible()
 }
@@ -447,10 +487,11 @@ is_writeable <- function(path) {
 replace_or_append <- function(lines, pattern, replacement) {
   matching_lines_loc <- grepl(pattern, lines)
   matching_lines <- lines[matching_lines_loc]
-  if (length(matching_lines) == 0) {
+  replace = length(matching_lines) == 0
+  if (!replace) {
     lines <- c(lines, replacement)
   } else {
     lines[matching_lines_loc] <- replacement
   }
-  lines
+  return(list("new_lines" = lines, "replaced" = replace))
 }

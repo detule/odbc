@@ -141,6 +141,9 @@ setMethod("odbcDataType", "Snowflake",
 #' }
 #' @export
 snowflake <- function() {
+  if (is.null(getOption("odbc.no_config_override"))) {
+    configure_simba(locate_config_snowflake, action = "warn")
+  }
   new("Snowflake")
 }
 

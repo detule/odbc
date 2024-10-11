@@ -33,7 +33,7 @@ NULL
 #'   Specifying these options will disable automated credential discovery.
 #' @param ... Further arguments passed on to [`dbConnect()`].
 #'
-#' @returns An `OdbcConnection` object with an active connection to a Databricks
+#' @return An `OdbcConnection` object with an active connection to a Databricks
 #'   cluster or SQL warehouse.
 #'
 #' @examples
@@ -45,7 +45,9 @@ NULL
 #' }
 #' @export
 databricks <- function() {
-  configure_spark()
+  if (is.null(getOption("odbc.no_config_override"))) {
+    configure_simba(locate_config_spark)
+  }
   new("DatabricksOdbcDriver")
 }
 
