@@ -288,7 +288,8 @@ check_attributes <- function(attributes, call = caller_env()) {
 }
 
 # apple + spark drive config (#651) --------------------------------------------
-configure_simba <- function(locate_config_callback, action = "modify", call = caller_env()) {
+configure_simba <- function(locate_config_callback = locate_config_spark,
+                            action = "modify", call = caller_env()) {
   if (!is_macos()) {
     return(invisible())
   }
@@ -422,10 +423,11 @@ configure_unixodbc_simba <- function(unixodbc_install, simba_config, action, cal
   )
   res <- replace_or_append(
     lines = simba_lines,
-    pattern = "^ODBCInstLib=",
+    key_pattern = "^ODBCInstLib=",
+    accepted_value = unixodbc_install,
     replacement = paste0("ODBCInstLib=", unixodbc_install)
   )
-  if (action != "modify" && res$replaced) {
+  if (action != "modify" && res$modified) {
     cli::cli_warn(
       paste0("Detected potentially unsafe driver settings. ",
        "Please consider revising the `ODBCInstLib` setting in ", simba_config)
@@ -434,10 +436,11 @@ configure_unixodbc_simba <- function(unixodbc_install, simba_config, action, cal
   simba_lines_new <- res$new_lines
   res <- replace_or_append(
     lines = simba_lines_new,
-    pattern = "^DriverManagerEncoding=",
+    key_pattern = "^DriverManagerEncoding=",
+    accepted_value = "UTF-16|utf-16",
     replacement = "DriverManagerEncoding=UTF-16"
   )
-  if (action != "modify" && res$replaced) {
+  if (action != "modify" && res$modified) {
     cli::cli_warn(
       paste0("Detected potentially unsafe driver settings. ",
        "Please consider revising the `DriverManagerEncoding` setting in ",
@@ -453,7 +456,7 @@ configure_unixodbc_simba <- function(unixodbc_install, simba_config, action, cal
   invisible()
 }
 
-write_spark_lines <- function(spark_lines, spark_lines_new, spark_config, call) {
+write_simba_lines <- function(spark_lines, spark_lines_new, spark_config, call) {
   if (identical(spark_lines, spark_lines_new)) {
     return(invisible())
   }
@@ -484,14 +487,15 @@ is_writeable <- function(path) {
 # the `replacement` is the whole intended line, giving the "key=value" pair.
 # if the key is found, replace that line with `replacement`.
 # if the key isn't found, append a new line with `replacement`.
-replace_or_append <- function(lines, pattern, replacement) {
-  matching_lines_loc <- grepl(pattern, lines)
+replace_or_append <- function(lines, key_pattern, accepted_value, replacement) {
+  matching_lines_loc <- grepl(key_pattern, lines)
   matching_lines <- lines[matching_lines_loc]
-  replace = length(matching_lines) == 0
-  if (!replace) {
+  found_ok = length(matching_lines) != 0 &&
+    any(grepl(accepted_value, lines[matching_lines_loc]))
+  if (length(matching_lines) == 0) {
     lines <- c(lines, replacement)
-  } else {
+  } else if (!found_ok) {
     lines[matching_lines_loc] <- replacement
   }
-  return(list("new_lines" = lines, "replaced" = replace))
+  return(list("new_lines" = lines, "modified" = !found_ok))
 }

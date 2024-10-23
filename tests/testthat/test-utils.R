@@ -137,10 +137,10 @@ test_that("check_attributes()", {
   )
 })
 
-test_that("configure_spark() returns early on windows", {
+test_that("configure_simba() returns early on windows", {
   local_mocked_bindings(is_macos = function() {FALSE})
 
-  expect_equal(configure_spark(), NULL)
+  expect_equal(configure_simba(), NULL)
 })
 
 test_that("configure_spark() errors informatively on failure to install unixODBC", {
@@ -152,12 +152,12 @@ test_that("configure_spark() errors informatively on failure to install unixODBC
   expect_snapshot(databricks(), error = TRUE)
 })
 
-test_that("configure_spark() calls configure_unixodbc_spark() (#835)", {
+test_that("configure_spark() calls configure_unixodbc_simba() (#835)", {
   skip_if_not(is_macos())
   local_mocked_bindings(
     locate_install_unixodbc = function() "hey",
     locate_config_spark = function() "there",
-    configure_unixodbc_spark = function(...) TRUE
+    configure_unixodbc_simba = function(...) TRUE
   )
 
   expect_true(configure_spark())
@@ -176,7 +176,7 @@ test_that("locate_install_unixodbc() returns reasonable values", {
 test_that("databricks() errors informatively when spark ini isn't writeable", {
   local_mocked_bindings(is_writeable = function(path) {FALSE})
   expect_snapshot(
-    write_spark_lines("", ".", ".", call2("databricks")),
+    write_simba_lines("", ".", ".", call2("databricks")),
     error = TRUE
   )
 })
@@ -187,7 +187,7 @@ test_that("locate_config_spark() returns reasonable values", {
   expect_equal(locate_config_spark(), simba_spark_ini)
 })
 
-test_that("configure_unixodbc_spark() writes reasonable entries", {
+test_that("configure_unixodbc_simba() writes reasonable entries", {
   unixodbc_install_path <- "libodbcinst.dylib"
   spark_config_path <- "simba.sparkodbc.ini"
 
@@ -199,9 +199,15 @@ test_that("configure_unixodbc_spark() writes reasonable entries", {
     con = spark_config_path
   )
 
-  configure_unixodbc_spark(
+  expect_snapshot(configure_unixodbc_simba(
     unixodbc_install = unixodbc_install_path,
-    spark_config = spark_config_path
+    simba_config = spark_config_path,
+    action = "warn"
+  ))
+  configure_unixodbc_simba(
+    unixodbc_install = unixodbc_install_path,
+    simba_config = spark_config_path,
+    action = "modify"
   )
 
   expect_equal(
@@ -214,7 +220,8 @@ test_that("configure_unixodbc_spark() writes reasonable entries", {
     )
   )
 
-  # both of the relevant fields are already there:
+  # both of the relevant fields are already there
+  # but point to incorrect values
   writeLines(
     c("some=entries",
       "not=relevant",
@@ -223,9 +230,15 @@ test_that("configure_unixodbc_spark() writes reasonable entries", {
     con = spark_config_path
   )
 
-  res <- configure_unixodbc_spark(
+  expect_snapshot(configure_unixodbc_simba(
     unixodbc_install = unixodbc_install_path,
-    spark_config = spark_config_path
+    simba_config = spark_config_path,
+    action = "warn"
+  ))
+  res <- configure_unixodbc_simba(
+    unixodbc_install = unixodbc_install_path,
+    simba_config = spark_config_path,
+    action = "modify"
   )
 
   expect_equal(res, NULL)
@@ -248,9 +261,15 @@ test_that("configure_unixodbc_spark() writes reasonable entries", {
     con = spark_config_path
   )
 
-  configure_unixodbc_spark(
+  expect_snapshot(configure_unixodbc_simba(
     unixodbc_install = unixodbc_install_path,
-    spark_config = spark_config_path
+    simba_config = spark_config_path,
+    action = "warn"
+  ))
+  configure_unixodbc_simba(
+    unixodbc_install = unixodbc_install_path,
+    simba_config = spark_config_path,
+    action = "modify"
   )
 
   expect_equal(
@@ -264,4 +283,19 @@ test_that("configure_unixodbc_spark() writes reasonable entries", {
       "DriverManagerEncoding=UTF-16"
     )
   )
+
+  # Finally, a good config
+  writeLines(
+    c("some=entries",
+      "not=relevant",
+      "ODBCInstLib=libodbcinst.dylib",
+      "DriverManagerEncoding=UTF-16"),
+    con = spark_config_path
+  )
+
+  expect_no_warning(configure_unixodbc_simba(
+    unixodbc_install = unixodbc_install_path,
+    simba_config = spark_config_path,
+    action = "warn"
+  ))
 })

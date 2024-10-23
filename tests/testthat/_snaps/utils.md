@@ -148,9 +148,42 @@
 # databricks() errors informatively when spark ini isn't writeable
 
     Code
-      write_spark_lines("", ".", ".", call2("databricks"))
+      write_simba_lines("", ".", ".", call2("databricks"))
     Condition
       Error in `databricks()`:
       ! Detected needed changes to the driver configuration file at ., but the file was not writeable.
       i Please make the changes outlined at https://solutions.posit.co/connections/db/databases/databricks/#troubleshooting-apple-macos-users.
+
+# configure_unixodbc_simba() writes reasonable entries
+
+    Code
+      configure_unixodbc_simba(unixodbc_install = unixodbc_install_path,
+        simba_config = spark_config_path, action = "warn")
+    Condition
+      Warning:
+      Detected potentially unsafe driver settings. Please consider revising the `ODBCInstLib` setting in simba.sparkodbc.ini
+      Warning:
+      Detected potentially unsafe driver settings. Please consider revising the `DriverManagerEncoding` setting in simba.sparkodbc.ini
+
+---
+
+    Code
+      configure_unixodbc_simba(unixodbc_install = unixodbc_install_path,
+        simba_config = spark_config_path, action = "warn")
+    Condition
+      Warning:
+      Detected potentially unsafe driver settings. Please consider revising the `ODBCInstLib` setting in simba.sparkodbc.ini
+      Warning:
+      Detected potentially unsafe driver settings. Please consider revising the `DriverManagerEncoding` setting in simba.sparkodbc.ini
+
+---
+
+    Code
+      configure_unixodbc_simba(unixodbc_install = unixodbc_install_path,
+        simba_config = spark_config_path, action = "warn")
+    Condition
+      Warning:
+      Detected potentially unsafe driver settings. Please consider revising the `ODBCInstLib` setting in simba.sparkodbc.ini
+      Warning:
+      Detected potentially unsafe driver settings. Please consider revising the `DriverManagerEncoding` setting in simba.sparkodbc.ini
 
