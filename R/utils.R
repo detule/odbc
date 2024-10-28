@@ -288,7 +288,14 @@ check_attributes <- function(attributes, call = caller_env()) {
 }
 
 # apple + spark drive config (#651) --------------------------------------------
-configure_simba <- function(locate_config_callback = locate_config_spark,
+# Method will attempt to:
+# 1. Locate the simba driver config using the user supplied callback.  Callback
+# method defaults to locate_config_spark.
+# 2. Inspect the config for some settings that can impact how our package
+# performs.
+# 3. If action == "modify" then we attempt to modify the config in-situ.
+# 4. Otherwise we throw a warning asking the user to revise.
+configure_simba <- function(locate_config_callback = (function() character()),
                             action = "modify", call = caller_env()) {
   if (!is_macos()) {
     return(invisible())
@@ -301,10 +308,19 @@ configure_simba <- function(locate_config_callback = locate_config_spark,
 
   simba_config <- locate_config_callback()
   if (length(simba_config) == 0) {
-    abort(
+    func <- cli::warn
+    if ( action == "modify" ){
+      fun <- cli::abort
+    }
+    func(
       c(
-        "Unable to locate the needed spark ODBC driver.",
-        i = "Please install the needed driver from https://www.databricks.com/spark/odbc-drivers-download."
+        "Unable to locate the config for the ODBC driver.",
+        i = paste("Please make sure you've installed the appropriate driver",
+          "for your platform and back end."),
+        i = paste("For example, for Databricks, you can download the OEM",
+          "driver from https://www.databricks.com/spark/odbc-drivers-download."),
+        i = paste("Similarly, for Snowflake, you can find information on",
+          "installing the driver at https://docs.snowflake.com/en/developer-guide/odbc/odbc-download.")
       ),
       call = call
     )
@@ -370,51 +386,6 @@ error_install_unixodbc <- function(call) {
   )
 }
 
-# p. 44 https://downloads.datastax.com/odbc/2.6.5.1005/Simba%20Spark%20ODBC%20Install%20and%20Configuration%20Guide.pdf
-locate_config_spark <- function() {
-  spark_env <- Sys.getenv("SIMBASPARKINI")
-  if (!identical(spark_env, "")) {
-    return(spark_env)
-  }
-
-  common_dirs <- c(
-    "/Library/simba/spark/lib",
-    "/etc",
-    getwd(),
-    Sys.getenv("HOME")
-  )
-
-  list.files(
-    common_dirs,
-    pattern = "simba\\.sparkodbc\\.ini$",
-    full.names = TRUE
-  )
-}
-
-locate_config_snowflake <- function() {
-  # Posit configuration is likely at:
-  # /opt/snowflake-osx-x64/bin/lib/rstudio.snowflakeodbc.ini
-  # OEM configuration is likely at:
-  # /opt/snowflake/snowflakeodbc/lib/universal/simba.snowflake.ini
-  spark_env <- Sys.getenv("SIMBASNOWFLAKEINI")
-  if (!identical(spark_env, "")) {
-    return(spark_env)
-  }
-
-  common_dirs <- c(
-    "/opt/snowflake-osx-x64/bin/lib/",
-    "/opt/snowflake/snowflakeodbc/lib/universal/",
-    getwd(),
-    Sys.getenv("HOME")
-  )
-
-  list.files(
-    common_dirs,
-    pattern = "snowflake(odbc)?\\.ini$",
-    full.names = TRUE
-  )
-}
-
 configure_unixodbc_simba <- function(unixodbc_install, simba_config, action, call) {
 
   # As shipped, the simba spark ini has an incomplete final line
@@ -477,6 +448,23 @@ write_simba_lines <- function(spark_lines, spark_lines_new, spark_config, call) 
   }
 
   writeLines(spark_lines_new, spark_config)
+}
+
+driver_dir <- function(driver) {
+  # driver argument could be an outright path, or a name
+  # of a driver specified in odbcinst.ini  Try to discern
+  driver_spec <- subset(odbcListDrivers(), name == driver)
+  if (nrow(driver_spec) ) {
+    driver_path <- subset(driver_spec, attribute == "Driver")$value
+  } else {
+    driver_path <- driver
+  }
+
+  ret <- dirname(driver_path)
+  if (ret == ".") {
+    ret <- character()
+  }
+  return(ret)
 }
 
 is_writeable <- function(path) {

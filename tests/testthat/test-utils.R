@@ -143,16 +143,16 @@ test_that("configure_simba() returns early on windows", {
   expect_equal(configure_simba(), NULL)
 })
 
-test_that("configure_spark() errors informatively on failure to install unixODBC", {
+test_that("configure_simba() errors informatively on failure to install unixODBC", {
   local_mocked_bindings(
     is_macos = function() {TRUE},
     locate_install_unixodbc = function() {character(0)}
   )
 
-  expect_snapshot(databricks(), error = TRUE)
+  expect_snapshot(configure_simba(), error = TRUE)
 })
 
-test_that("configure_spark() calls configure_unixodbc_simba() (#835)", {
+test_that("configure_simba() calls configure_unixodbc_simba() (#835)", {
   skip_if_not(is_macos())
   local_mocked_bindings(
     locate_install_unixodbc = function() "hey",
@@ -160,7 +160,7 @@ test_that("configure_spark() calls configure_unixodbc_simba() (#835)", {
     configure_unixodbc_simba = function(...) TRUE
   )
 
-  expect_true(configure_spark())
+  expect_true(configure_simba())
 })
 
 test_that("locate_install_unixodbc() returns reasonable values", {
@@ -181,10 +181,20 @@ test_that("databricks() errors informatively when spark ini isn't writeable", {
   )
 })
 
-test_that("locate_config_spark() returns reasonable values", {
+test_that("driver_dir(...) returns reasonable values", {
+  path <- "/some/path/driver.so"
+  local_mocked_bindings(odbcListDrivers = function() {
+    data.frame(name = "OG Driver", attribute = "Driver",
+      value = path, drop = FALSE)
+  })
+  expect_equal(driver_dir("OG Driver"), "/some/path")
+  expect_equal(driver_dir(path), "/some/path")
+})
+
+test_that("spark_simba_config() returns reasonable values", {
   simba_spark_ini <- "some/folder/simba.sparkodbc.ini"
   withr::local_envvar(SIMBASPARKINI = simba_spark_ini)
-  expect_equal(locate_config_spark(), simba_spark_ini)
+  expect_equal(spark_simba_config(""), simba_spark_ini)
 })
 
 test_that("configure_unixodbc_simba() writes reasonable entries", {

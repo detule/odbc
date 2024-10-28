@@ -136,12 +136,12 @@
       ! `attributes` does not support the connection attributes "boop" and "beep".
       i Allowed connection attribute is "azure_token".
 
-# configure_spark() errors informatively on failure to install unixODBC
+# configure_simba() errors informatively on failure to install unixODBC
 
     Code
-      databricks()
+      configure_simba()
     Condition
-      Error in `databricks()`:
+      Error:
       ! Unable to locate the unixODBC driver manager.
       i Please install unixODBC using Homebrew with `brew install unixodbc`.
 
