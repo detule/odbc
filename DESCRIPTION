@@ -31,6 +31,7 @@ Imports:
 Suggests:
     covr,
     DBItest,
+    httr2,
     knitr,
     magrittr,
     rmarkdown,
@@ -46,7 +47,7 @@ Config/Needs/website: tidyverse/tidytemplate
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.0
+RoxygenNote: 7.3.2
 SystemRequirements: GNU make, An ODBC3 driver manager and drivers.
 Collate: 
     'RcppExports.R'
@@ -67,6 +68,7 @@ Collate:
     'driver-hive.R'
     'driver-impala.R'
     'driver-mysql.R'
+    'driver-netezza.R'
     'driver-oracle.R'
     'driver-postgres.R'
     'driver-redshift.R'

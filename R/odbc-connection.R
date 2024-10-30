@@ -10,6 +10,7 @@ OdbcConnection <- function(
     timezone = "UTC",
     timezone_out = "UTC",
     encoding = "",
+    name_encoding = "",
     bigint = c("integer64", "integer", "numeric", "character"),
     timeout = Inf,
     dbms.name = NULL,
@@ -26,7 +27,7 @@ OdbcConnection <- function(
 
   bigint <- bigint_mappings()[match.arg(bigint, names(bigint_mappings()))]
 
-  if (is.infinite(timeout)) {
+  if (is.infinite(timeout) || is.na(timeout)) {
     timeout <- 0
   }
 
@@ -36,6 +37,7 @@ OdbcConnection <- function(
       timezone = timezone,
       timezone_out = timezone_out,
       encoding = encoding,
+      name_encoding = name_encoding,
       bigint = bigint,
       timeout = timeout,
       r_attributes = attributes,
