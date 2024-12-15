@@ -6,14 +6,22 @@ model, with support for personal access tokens, OAuth machine-to-machine
 credentials, and OAuth user-to-machine credentials supplied via Posit
 Workbench or the Databricks CLI on desktop.
 All of these credentials are detected automatically if present using
-standard environment variables."><meta property="og:description" content="Connect to Databricks clusters and SQL warehouses via the Databricks ODBC driver.
+standard environment variables.
+In addition, on macOS platforms, the dbConnect method will check
+for irregularities with how the driver is configured,
+and attempt to fix in-situ, unless the odbc.no_config_override
+environment variable is set."><meta property="og:description" content="Connect to Databricks clusters and SQL warehouses via the Databricks ODBC driver.
 In particular, the custom dbConnect() method for the Databricks ODBC driver
 implements a subset of the Databricks client unified authentication
 model, with support for personal access tokens, OAuth machine-to-machine
 credentials, and OAuth user-to-machine credentials supplied via Posit
 Workbench or the Databricks CLI on desktop.
 All of these credentials are detected automatically if present using
-standard environment variables."><meta property="og:image" content="https://odbc.r-dbi.org/logo.png"><meta name="robots" content="noindex"></head><body>
+standard environment variables.
+In addition, on macOS platforms, the dbConnect method will check
+for irregularities with how the driver is configured,
+and attempt to fix in-situ, unless the odbc.no_config_override
+environment variable is set."><meta property="og:image" content="https://odbc.r-dbi.org/logo.png"><meta name="robots" content="noindex"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -60,7 +68,11 @@ model, with support for personal access tokens, OAuth machine-to-machine
 credentials, and OAuth user-to-machine credentials supplied via Posit
 Workbench or the Databricks CLI on desktop.
 All of these credentials are detected automatically if present using
-<a href="https://docs.databricks.com/en/dev-tools/auth.html#environment-variables-and-fields-for-client-unified-authentication" class="external-link">standard environment variables</a>.</p>
+<a href="https://docs.databricks.com/en/dev-tools/auth.html#environment-variables-and-fields-for-client-unified-authentication" class="external-link">standard environment variables</a>.
+In addition, on macOS platforms, the <code>dbConnect</code> method will check
+for irregularities with how the driver is configured,
+and attempt to fix in-situ, unless the <code>odbc.no_config_override</code>
+environment variable is set.</p>
     </div>
 
     <div class="section level2">
