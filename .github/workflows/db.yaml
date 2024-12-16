@@ -124,6 +124,9 @@ jobs:
           LIB_DIR: /usr/lib/x86_64-linux-gnu/
           INCLUDE_DIR: /usr/include
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: Test
         run: |
           options("odbc.interruptible"=TRUE);testthat::test_local(reporter = testthat::ProgressReporter$new(max_failures = Inf, update_interval = Inf))
