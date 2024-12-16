@@ -12,7 +12,7 @@ name: DBs (Linux)
 
 jobs:
   database:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     services:
       oracle:
@@ -48,6 +48,7 @@ jobs:
           SA_PASSWORD: Password12
 
     env:
+      ODBC_DRIVERS_VINTAGE: "OEM"
       CRAN: "https://packagemanager.rstudio.com/cran/__linux__/jammy/latest"
       ODBCSYSINI: ${{ github.workspace }}/.github/odbc
       TNS_ADMIN: ${{ github.workspace }}/.github/odbc
@@ -122,6 +123,9 @@ jobs:
         env:
           LIB_DIR: /usr/lib/x86_64-linux-gnu/
           INCLUDE_DIR: /usr/include
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
       - name: Test
         run: |
