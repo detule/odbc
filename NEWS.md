@@ -1,50 +1,60 @@
 # odbc (development version)
 
-* SQL Server: Fix roundtrip of `hms` data.
+# odbc 1.6.1
 
-* SQL Server: Fix data truncation when writing to temp tables with
-  `FreeTDS` (#866).
+* odbc will now automatically find statically built installations of
+  unixodbc (#899).
 
-* SQL Server: Writing to DATETIME2 targets respects precision (#793).
+# odbc 1.6.0
 
-* Addressed issue where error messages rethrown from some drivers would be
-  garbled when the raw error message contained curly brackets 
-  (#859 by @simonpcouch).
+## New features
 
-* snowflake: Runtime driver configuration checks on `MacOS` (#857).
+* A hex logo has been added to the package (@edgararuiz, #824).
 
-* Separate column content and name encoding by adding
-  a new `name_encoding` argument to `dbConnect` to complement
-  the existing `encoding` parameter (#845).
+* `databricks()` and `snowflake()` detect viewer-based credentials on
+  Posit Connect (@atheriel, #853 and #894).
 
-* Netezza: Improved data type inference for character and boolean
-  columns (#847, #850).
+* `odbcEditDrivers()`, `odbcEditSystemDSN()`, and `odbcEditUserDSN()` 
+  create shortcuts for `file.edit(odbcListConfig()[[i]])` on macOS and 
+  Linux (@simonpcouch, #827).
+  
+* New `redshift()` helper simplifies connections to Amazon Redshift clusters,
+  particularly with IAM credentials (@atheriel, #879).
+  
+## Bug fixes and minor improvements
 
-* Added functions `odbcEditDrivers()`, `odbcEditSystemDSN()`, and
-  `odbcEditUserDSN()` to provide a shorthand for 
-  `file.edit(odbcListConfig()[[i]])`. The helpers only support macOS and 
-  Linux and will raise an error on Windows (@simonpcouch, #827).
+* Error messages rethrown from drivers no longer become garbled when raw messages
+  contain curly brackets (@simonpcouch, #859).
+  
+* SQL Server drivers installed with homebrew are now discovered automatically
+  on ARM macOS (@stevecondylios, #893).
 
-* Trailing slashes are now automatically removed from `databricks(workspace)`,
-  guarding users from an uninformative driver message (@simonpcouch, #827).
+* `databricks(workspace)` removes trailing slashes automatically, preventing 
+  uninformative driver messages (@simonpcouch, #827).
 
-* `snowflake()` now allows passing `uid` without `pwd` when 
-  `authenticator = "externalbrowser"` (@simonpcouch, #817).
+* `dbConnect()` displays clear errors when unixODBC isn't found on macOS and
+  Linux (@simonpcouch, #782).
 
-* DB2: Better support for temp tables in `dbListTables`, and `dbExistsTable` (#823).
+* `dbConnect()` adds `name_encoding` to complement `encoding` for separate
+  column content and name encoding (#845).
+  
+* `dbListTables()` and `dbExistsTable()` improve temp table support with DB2 (#823).
 
-* `dbConnect(odbc(), ...)` will now error informatively if the package
-  can't locate a unixODBC install on MacOS and Linux (@simonpcouch, #782).
+* Netezza character and boolean columns receive improved data type
+  inference (#847, #850).
+  
+* Oracle `DATE` and `TIMESTAMP(n)` targets handle writes correctly with
+  `batch_size > 1` (#810).
+  
+* `snowflake()` checks runtime driver configuration on macOS (#857).
 
-* Added a hex logo for the package (@edgararuiz, #824).
+* `snowflake()` accepts `uid` without `pwd` when using
+  `authenticator = "externalbrowser"` or `authenticator = "SNOWFLAKE_JWT"`
+  (@simonpcouch, #817 and #889).
 
-* oracle: Fix writing to DATE and TIMESTAMP(n) targets using `batch_size` > 1.
-
-* SQL Server: Fix issue related to writing when using SIMBA drivers (#816).
-
-* `snowflake()` and `databricks()` now accept a `session` argument for passing
-  viewer-based OAuth credentials from Shiny sessions on Posit Connect
-  (@atheriel, #853).
+* Resolved SQL Server data truncation in temp tables with `FreeTDS` (#866),
+  writing issues with SIMBA drivers (#816), `hms` data roundtrip (#887),
+  and precision when writing to `DATETIME2` targets (#793).
 
 # odbc 1.5.0
 
