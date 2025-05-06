@@ -193,7 +193,7 @@ parse_database_error <- function(msg) {
 
   # Remove the square-bracketed context from the database error
   cnd_body <- Reduce(
-    function(p, x) function(p, x) gsub(p, "", x, fixed = TRUE),
+    function(p, x) gsub(p, "", x, fixed = TRUE),
     cnd_context_driver,
     cnd_msg[-1],
     right = TRUE
