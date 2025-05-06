@@ -193,11 +193,20 @@ parse_database_error <- function(msg) {
 
   # Remove the square-bracketed context from the database error
   cnd_body <- Reduce(
-    function(p, x) gsub(p, "", x, fixed = TRUE),
+    function(p, x) function(p, x) gsub(p, "", x, fixed = TRUE),
     cnd_context_driver,
     cnd_msg[-1],
     right = TRUE
   )
+  # Limit error mesage length to something sane
+  MAXLEN <- 5000
+  cnd_body <- sapply(cnd_body, FUN = function(x) {
+    if (nchar(x) > MAXLEN ) {
+      x <- substr(x, 0, MAXLEN)
+      x <- paste0(x, "...")
+    }
+    x
+  }, USE.NAMES = FALSE)
 
   cnd_body <- contextualize_database_error(cnd_body)
 
