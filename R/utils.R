@@ -375,11 +375,18 @@ locate_install_unixodbc <- function() {
     "/opt/R/x86_64/lib"
   )
 
-  list.files(
-    common_dirs,
-    pattern = libodbcinst_filename(),
-    full.names = TRUE
-  )
+  file_names <- libodbcinst_filename()
+  for (file_name in file_names) {
+    paths <- list.files(
+       common_dirs,
+       pattern = file_name,
+       full.names = TRUE
+    )
+    if (length(paths)) {
+      return(paths)
+    }
+  }
+  return(character())
 }
 
 system_safely <- function(x) {
@@ -403,9 +410,9 @@ system_safely <- function(x) {
 # list.files( ..., pattern = ... ).
 libodbcinst_filename <- function() {
   if (is_macos()) {
-    "libodbcinst.dylib|libodbcinst.a"
+    return(c("libodbcinst.dylib", "libodbcinst.a"))
   } else {
-    "libodbcinst.so|libodbcinst.a"
+    return(c("libodbcinst.so", "libodbcinst.a"))
   }
 }
 
