@@ -220,11 +220,14 @@ test_that("locate_install_unixodbc() prefers shlib", {
   skip_on_cran()
   {
     local_mocked_bindings(
-      is_macos = function() {TRUE},
+      is_macos = function() {TRUE}
+    )
+    local_mocked_bindings(
       list.files = function (path = ".", pattern = NULL, all.files = FALSE, full.names = FALSE, ...) {
         # Mimic being able to find any pattern passed as argument
         return(pattern)
-      }
+      },
+      .package = "base"
     )
     res <- locate_install_unixodbc()
     expect_equal(length(res), 1)
@@ -232,12 +235,15 @@ test_that("locate_install_unixodbc() prefers shlib", {
   }
   {
     local_mocked_bindings(
-      is_macos = function() {TRUE},
+      is_macos = function() {TRUE}
+    )
+    local_mocked_bindings(
       list.files = function (path = ".", pattern = NULL, all.files = FALSE, full.names = FALSE, ...) {
         # Mimic being able to find .a only
         if(pattern == "libodbcinst.a") return(pattern)
         return(character())
-      }
+      },
+      .package = "base"
     )
     res <- locate_install_unixodbc()
     expect_equal(length(res), 1)
@@ -245,12 +251,15 @@ test_that("locate_install_unixodbc() prefers shlib", {
   }
   {
     local_mocked_bindings(
-      is_macos = function() {TRUE},
+      is_macos = function() {TRUE}
+    )
+    local_mocked_bindings(
       list.files = function (path = ".", pattern = NULL, all.files = FALSE, full.names = FALSE, ...) {
         # Mimic being able to find shlib only
         if(pattern == "libodbcinst.dylib") return(pattern)
         return(character())
-      }
+      },
+      .package = "base"
     )
     res <- locate_install_unixodbc()
     expect_equal(length(res), 1)
