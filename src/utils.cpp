@@ -5,6 +5,13 @@
 #if !defined(_WIN32) && !defined(_WIN64)
 #include <signal.h>
 #endif
+
+#ifndef SQL_DRIVER_CONN_ATTR_BASE
+    #define SQL_DRIVER_CONN_ATTR_BASE   0x00004000
+#endif
+#define SQL_SF_CONN_ATTR_BASE (SQL_DRIVER_CONN_ATTR_BASE + 0x53)
+#define SQL_SF_CONN_ATTR_PRIV_KEY (SQL_SF_CONN_ATTR_BASE + 1)
+#define SQL_SF_CONN_ATTR_PRIV_KEY_CONTENT (SQL_SF_CONN_ATTR_BASE + 3)
 namespace odbc {
 namespace utils {
 
@@ -47,6 +54,33 @@ namespace utils {
         attributes.push_back(nanodbc::connection::attribute(
               SQL_COPT_SS_ACCESS_TOKEN, SQL_IS_POINTER, buffer.get()));
         buffer_context.push_back( buffer );
+      }
+      if ( r_attributes.containsElementNamed( "sf_jwt_priv_key" ) &&
+          !Rf_isNull(r_attributes["sf_jwt_priv_key"]) )
+      {
+        Rcpp::Rcout << "Adding private key attribute\n";
+        auto xptr = r_attributes["sf_jwt_priv_key"];
+        //std::shared_ptr<std::string> priv_key =
+        //  std::make_shared<std::string>(Rcpp::as<std::string>(r_attributes["sf_jwt_priv_key"]));
+        //char* leak = new char[priv_key->size()];
+        //std::memcpy(leak, priv_key->c_str(), priv_key->size());
+        attributes.push_back(nanodbc::connection::attribute(
+              SQL_SF_CONN_ATTR_PRIV_KEY, SQL_IS_POINTER, R_ExternalPtrAddr(xptr)));
+        //SQL_SF_CONN_ATTR_PRIV_KEY, priv_key->size(), (void*)leak));
+        //buffer_context.push_back(priv_key);
+      }
+      if ( r_attributes.containsElementNamed( "sf_jwt_priv_key_str" ) &&
+          !Rf_isNull(r_attributes["sf_jwt_priv_key_str"]) )
+      {
+        Rcpp::Rcout << "Adding private key STRING attribute\n";
+        std::shared_ptr<std::string> priv_key =
+          std::make_shared<std::string>(Rcpp::as<std::string>(r_attributes["sf_jwt_priv_key_str"]));
+        // FIXME: LEAK.  OK for prototyping
+        char* leak = new char[priv_key->size()];
+        std::memcpy(leak, priv_key->c_str(), priv_key->size());
+        Rcpp::Rcout << "attribute value: "<< leak << "\n";
+        attributes.push_back(nanodbc::connection::attribute(
+               SQL_SF_CONN_ATTR_PRIV_KEY_CONTENT, priv_key->size(), (void*)leak));
       }
     }
   }

@@ -31,6 +31,7 @@ OdbcConnection <- function(
     timeout <- 0
   }
 
+  cat("Connection string is: ", connection_string, "\n")
   withCallingHandlers(
     ptr <- odbc_connect(
       connection_string,
@@ -211,7 +212,7 @@ needs_quoting <- function(x) {
 #'   attributes = list("azure_token" = .token)
 #' )
 #' }
-SUPPORTED_CONNECTION_ATTRIBUTES <- c("azure_token")
+SUPPORTED_CONNECTION_ATTRIBUTES <- c("azure_token", "sf_jwt_priv_key", "sf_jwt_priv_key_str")
 
 #' Odbc Connection Methods
 #'
