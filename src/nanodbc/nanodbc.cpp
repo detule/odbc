@@ -3531,7 +3531,10 @@ std::unique_ptr<T, std::function<void(T*)>> result::result_impl::ensure_pdata(sh
     if (!success(rc))
         NANODBC_THROW_DATABASE_ERROR(stmt_.native_statement_handle(), SQL_HANDLE_STMT);
 
-    return buffer;
+    // Return a traditional unique_ptr since we just allocated this buffer, and
+    // we most certainly want this memory returned to the heap when the result
+    // goes out of scope.
+    return std::unique_ptr<T>(buffer);
 }
 
 template <class T>
